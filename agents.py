@@ -46,7 +46,7 @@ asked for detail. You are in a group meeting with other AI agents."""
     }
 }
 
-CLAUDE_MODEL = "claude-sonnet-4-6"
+CLAUDE_MODEL = "claude-sonnet-4-5"
 
 
 def build_context(conversation_history, memory_context=""):
@@ -230,6 +230,7 @@ def run_agents(message, conversation_history, memory_context=""):
     @mistral  — only Mistral responds
     @phi3     — only Phi3 responds
     @gemma2   — only Gemma2 responds
+    @deepseek — only DeepSeek responds
     @claude   — only Claude API responds
     No mention — defaults to @all
     """
@@ -292,13 +293,16 @@ def run_agents(message, conversation_history, memory_context=""):
     return responses
 
 
-def run_free_talk_thread(topic, conversation_history, output_queue, stop_event, duration=300):
+def run_free_talk_thread(topic, conversation_history, output_queue, stop_event, duration=None):
     """
     Run all local agents in a free-flowing conversation for `duration` seconds.
     Each agent takes turns responding to the group.
     Results are pushed into output_queue as they arrive.
     A None sentinel is pushed when finished.
     """
+    if duration is None:
+        import os as _os
+        duration = int(_os.getenv("FREE_TALK_DURATION", "300"))
     start_time = time.time()
     talk_history = []
     agent_keys = list(AGENTS.keys())
