@@ -84,6 +84,11 @@ def start_talk():
     q          = queue.Queue()
     stop_event = threading.Event()
 
+    # Evict oldest session if map grows too large (prevents memory leak on abandoned sessions)
+    if len(talk_sessions) > 100:
+        oldest = next(iter(talk_sessions))
+        talk_sessions.pop(oldest, None)
+        talk_stop_events.pop(oldest, None)
     talk_sessions[session_id]    = q
     talk_stop_events[session_id] = stop_event
 
