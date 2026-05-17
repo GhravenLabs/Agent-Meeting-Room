@@ -46,7 +46,7 @@ asked for detail. You are in a group meeting with other AI agents."""
     }
 }
 
-CLAUDE_MODEL = "claude-sonnet-4-5"
+CLAUDE_MODEL = "claude-sonnet-4-6"
 
 
 def build_context(conversation_history, memory_context=""):
