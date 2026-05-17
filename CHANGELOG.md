@@ -11,6 +11,16 @@ All notable changes to Agent Meeting Room are documented here.
 
 ---
 
+## [1.3.0] — 2026-05-11
+
+### Changed
+- Updated Claude model from `claude-sonnet-4-5` to `claude-sonnet-4-6` in `agents.py` and README
+- Fixed talk session memory leak — evict oldest session when `talk_sessions` dict exceeds 100 entries
+- Fixed missing `anthropic` SDK in `requirements.txt` — was referenced in code but not listed as a dependency
+- Improved documentation on model-swap instructions in README agent table
+
+---
+
 ## [1.2.0] — 2025-04-30
 
 ### Changed
