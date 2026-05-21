@@ -6,7 +6,7 @@ A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents
 ## Stack
 - Python 3.11, Flask
 - Local agents via Ollama: Mistral, Phi3, Gemma2:2b, DeepSeek-r1:7b
-- Cloud agent: Anthropic Claude API (`claude-sonnet-4-6`)
+- Cloud agent: Anthropic Claude API (`claude-3-5-sonnet-20241022`)
 - Frontend: Vanilla JS with Server-Sent Events for streaming
 - Memory: Obsidian Markdown vault
 
