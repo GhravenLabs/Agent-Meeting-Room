@@ -46,7 +46,7 @@ asked for detail. You are in a group meeting with other AI agents."""
     }
 }
 
-CLAUDE_MODEL = "claude-sonnet-4-6"
+CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
 
 
 def build_context(conversation_history, memory_context=""):
@@ -76,8 +76,7 @@ def ask_ollama(model, system_prompt, user_message, context=""):
                 "model":      model,
                 "system":     system_prompt,
                 "prompt":     full_prompt,
-                "stream":     False,
-                "keep_alive": 0
+                "stream":     False
             },
             timeout=120
         )
