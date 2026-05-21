@@ -11,6 +11,14 @@ All notable changes to Agent Meeting Room are documented here.
 
 ---
 
+## [1.4.0] — 2026-05-21
+
+### Fixed
+- Fixed critical bug where the Anthropic API would reject calls due to invalid model name `claude-sonnet-4-6` (updated to `claude-3-5-sonnet-20241022` across `agents.py`, `README.md`, and `CLAUDE.md`)
+- Removed `keep_alive: 0` from `ask_ollama` payload to prevent Ollama from constantly unloading models from VRAM between turns, drastically improving multi-agent performance
+
+---
+
 ## [1.3.0] — 2026-05-11
 
 ### Changed
