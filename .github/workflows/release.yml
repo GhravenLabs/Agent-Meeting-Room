@@ -1,0 +1,91 @@
+# Agent Meeting Room — Release Workflow
+# Triggers on push of a version tag: git tag v1.5.0 && git push origin v1.5.0
+# Builds AgentMeetingRoom.exe via PyInstaller on Windows runner
+# Then creates a GitHub Release with the .exe attached
+
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-windows:
+    name: Build Windows EXE
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install -r requirements.txt
+
+      - name: Copy icon to root
+        run: copy assets\icon.ico icon.ico
+
+      - name: Build with PyInstaller
+        run: pyinstaller AgentMeetingRoom.spec --noconfirm
+
+      - name: Verify output
+        run: |
+          if (!(Test-Path "dist\AgentMeetingRoom.exe")) {
+            Write-Error "Build failed — exe not found"
+            exit 1
+          }
+          $size = (Get-Item "dist\AgentMeetingRoom.exe").Length / 1MB
+          Write-Host "Build OK — $([math]::Round($size,1)) MB"
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AgentMeetingRoom-Windows
+          path: dist/AgentMeetingRoom.exe
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Agent Meeting Room ${{ github.ref_name }}"
+          body: |
+            ## Agent Meeting Room ${{ github.ref_name }}
+
+            ### 📦 Downloads
+            | File | Platform | Notes |
+            |------|----------|-------|
+            | `AgentMeetingRoom.exe` | Windows 10/11 | Portable — double-click to run |
+            | `AgentMeetingRoom-Setup.exe` | Windows 10/11 | Full installer with shortcuts |
+
+            ### ⚡ Quick start
+            1. **Install [Ollama](https://ollama.com)** and pull at least one model:
+               ```bash
+               ollama pull mistral
+               ```
+            2. **Run** `AgentMeetingRoom.exe` — browser opens automatically at `http://localhost:5000`
+            3. *(Optional)* Set your Anthropic API key in `.env` for `@claude`
+
+            ### 🔧 Adding your own agents
+            You can add **as many Ollama models as you want** — limited only by your hardware:
+            1. Pull the model: `ollama pull llama3` (or any model from [ollama.com/library](https://ollama.com/library))
+            2. Open `agents.py` and add an entry to the `AGENTS` dict (5 lines)
+            3. Restart — your new agent appears in the UI automatically
+
+            See [CONTRIBUTING.md](CONTRIBUTING.md) for full instructions.
+
+            ### 📋 What's new
+            See [CHANGELOG.md](CHANGELOG.md)
+          files: |
+            dist/AgentMeetingRoom.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
