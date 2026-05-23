@@ -70,10 +70,10 @@ jobs:
 
             ### Add unlimited agents
             Pull any model from [ollama.com/library](https://ollama.com/library), add 5 lines to `agents.py`.
-            See [CONTRIBUTING.md](https://github.com/Ghraven/Agent-Meeting-Room/blob/main/CONTRIBUTING.md).
+            See [CONTRIBUTING.md](https://github.com/GhravenLabs/Agent-Meeting-Room/blob/main/CONTRIBUTING.md).
 
             ### What is new
-            See [CHANGELOG.md](https://github.com/Ghraven/Agent-Meeting-Room/blob/main/CHANGELOG.md)
+            See [CHANGELOG.md](https://github.com/GhravenLabs/Agent-Meeting-Room/blob/main/CHANGELOG.md)
 
             ---
             Built automatically on Windows runner - Python 3.11 + PyInstaller
