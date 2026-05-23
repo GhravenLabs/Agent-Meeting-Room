@@ -94,12 +94,12 @@ unless asked for detail. You are in a group meeting with other AI agents."""
 ## Download & install
 
 ### Option A — Portable EXE (simplest)
-1. Go to [**Releases**](https://github.com/Ghraven/Agent-Meeting-Room/releases/latest)
+1. Go to [**Releases**](https://github.com/GhravenLabs/Agent-Meeting-Room/releases/latest)
 2. Download `AgentMeetingRoom.exe`
 3. Double-click — browser opens automatically
 
 ### Option B — Full installer
-1. Download `AgentMeetingRoom-Setup.exe` from [Releases](https://github.com/Ghraven/Agent-Meeting-Room/releases/latest)
+1. Download `AgentMeetingRoom-Setup.exe` from [Releases](https://github.com/GhravenLabs/Agent-Meeting-Room/releases/latest)
 2. Run the installer — creates desktop shortcut + Start Menu entry
 3. Launch from your desktop
 
@@ -141,7 +141,7 @@ ollama pull deepseek-r1:7b # ~4.7 GB — deep reasoning
 ### Step 2 — Clone and install Python dependencies
 
 ```bash
-git clone https://github.com/Ghraven/Agent-Meeting-Room
+git clone https://github.com/GhravenLabs/Agent-Meeting-Room
 cd Agent-Meeting-Room
 pip install -r requirements.txt
 ```
