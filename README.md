@@ -116,30 +116,84 @@ See [Quick Start](#quick-start) below.
 
 ## Quick Start
 
+### Step 1 — Install Ollama (required)
+
+Ollama runs the local AI models. **Without it, local agents won't respond.**
+
+| Platform | Download |
+|----------|----------|
+| Windows  | [ollama.com/download/windows](https://ollama.com/download/OllamaSetup.exe) |
+| macOS    | [ollama.com/download/mac](https://ollama.com/download/Ollama-darwin.zip) |
+| Linux    | `curl -fsSL https://ollama.com/install.sh \| sh` |
+
+After installing, pull at least one model:
 ```bash
-# 1. Clone
-git clone https://github.com/Ghraven/agent-meeting-room
-cd agent-meeting-room
+ollama pull mistral        # ~4 GB — recommended starting point
+ollama pull phi3           # ~2 GB — lightweight
+ollama pull gemma2:2b      # ~1.5 GB — very lightweight
+ollama pull deepseek-r1:7b # ~4.7 GB — deep reasoning
+```
+> Ollama must be **running** before you start Agent Meeting Room.  
+> It starts automatically on Windows/macOS after install. On Linux: `ollama serve`
 
-# 2. Install dependencies
+---
+
+### Step 2 — Clone and install Python dependencies
+
+```bash
+git clone https://github.com/Ghraven/Agent-Meeting-Room
+cd Agent-Meeting-Room
 pip install -r requirements.txt
+```
 
-# 3. Pull Ollama models
-ollama pull mistral
-ollama pull phi3
-ollama pull gemma2:2b
-ollama pull deepseek-r1:7b
+Requires **Python 3.11+**. Check with `python --version`.
 
-# 4. Set up environment
+---
+
+### Step 3 — Configure (copy .env)
+
+```bash
 cp .env.example .env
-# Edit .env — add your Anthropic API key (only needed for @claude)
+```
 
-# 5. Run
+Open `.env` and set:
+
+| Variable | Required? | What it does |
+|----------|-----------|--------------|
+| `ANTHROPIC_API_KEY` | Optional | Enables `@claude` — get one at [console.anthropic.com](https://console.anthropic.com) |
+| `MEMORY_BACKEND` | Optional | `local` (default), `obsidian`, or `none` |
+| `OBSIDIAN_VAULT_PATH` | Optional | Only if `MEMORY_BACKEND=obsidian` |
+
+**Memory is optional.** By default it saves notes to `./meeting_notes/` next to `app.py` — no Obsidian needed.
+
+---
+
+### Step 4 — Run
+
+```bash
 python app.py
 # Windows: double-click start.bat
 ```
 
 Open **http://localhost:5000**
+
+The startup log tells you exactly what's working:
+```
+==================================================
+  Agent Meeting Room
+==================================================
+  ✓ Ollama running  (4 model(s) available)
+      · mistral
+      · phi3
+      · gemma2:2b
+      · deepseek-r1:7b
+  ✓ Memory: local folder  (./meeting_notes)
+  · Claude API: no key set  (@claude will not respond)
+    → Add ANTHROPIC_API_KEY to .env for @claude
+==================================================
+  Open: http://localhost:5000
+==================================================
+```
 
 ---
 
@@ -176,12 +230,12 @@ agent-meeting-room/
 
 ## Requirements
 
-| Requirement | Notes |
-|---|---|
-| Python 3.11+ | |
-| [Ollama](https://ollama.com) | Must be running on port 11434 |
-| Anthropic API key | Only needed for `@claude` — optional |
-| [Obsidian](https://obsidian.md) | Optional — for memory/note saving |
+| Requirement | Required? | Notes |
+|-------------|-----------|-------|
+| Python 3.11+ | ✅ Required | [python.org](https://python.org) |
+| [Ollama](https://ollama.com) | ✅ Required | For local agents — must be running |
+| Anthropic API key | Optional | Only for `@claude` |
+| [Obsidian](https://obsidian.md) | Optional | Only if you want Obsidian memory — not needed |
 
 ---
 
@@ -191,7 +245,7 @@ agent-meeting-room/
 **Local AI:** Ollama (Mistral · Phi3 · Gemma2 · DeepSeek)  
 **Cloud AI:** Anthropic Claude API  
 **Frontend:** Vanilla JS · SSE streaming  
-**Memory:** Obsidian Markdown vault  
+**Memory:** Pluggable — local folder (default) · Obsidian vault (optional) · or disabled  
 
 ---
 
