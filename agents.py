@@ -46,7 +46,7 @@ asked for detail. You are in a group meeting with other AI agents."""
     }
 }
 
-CLAUDE_MODEL = "claude-3-5-sonnet-20241022"
+CLAUDE_MODEL = "claude-sonnet-4-5"
 
 
 def build_context(conversation_history, memory_context=""):
@@ -62,27 +62,33 @@ def build_context(conversation_history, memory_context=""):
     return context
 
 
-def ask_ollama(model, system_prompt, user_message, context=""):
-    """Ask a local Ollama model."""
+def ask_ollama(model, system_prompt, user_message, context="", _retries=1):
+    """Ask a local Ollama model. Retries once on failure with a 2s backoff."""
     full_prompt = ""
     if context:
         full_prompt += f"{context}\n\n"
     full_prompt += f"User message: {user_message}\n\nYour response:"
 
-    try:
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model":      model,
-                "system":     system_prompt,
-                "prompt":     full_prompt,
-                "stream":     False
-            },
-            timeout=120
-        )
-        return response.json()["response"].strip()
-    except Exception as e:
-        return f"[Error: {e}]"
+    for attempt in range(_retries + 1):
+        try:
+            response = requests.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model":  model,
+                    "system": system_prompt,
+                    "prompt": full_prompt,
+                    "stream": False
+                },
+                timeout=120
+            )
+            response.raise_for_status()
+            return response.json()["response"].strip()
+        except Exception as e:
+            if attempt < _retries:
+                print(f"[Ollama] {model} failed (attempt {attempt + 1}), retrying in 2s... ({e})")
+                time.sleep(2)
+            else:
+                return f"[{model} unavailable — is Ollama running?]"
 
 
 def ask_claude(message, context=""):
@@ -354,7 +360,7 @@ Keep it under 80 words. Be conversational, not formal."""
         output_queue.put(None)
         return
 
-    # Summary round (~30s)
+    # Summary round
     print("[Talk] Generating summary...")
     full_transcript = "\n".join(
         f"{e['name']}: {e['message']}" for e in talk_history
