@@ -5,7 +5,7 @@
 #define AppName      "Agent Meeting Room"
 #define AppVersion   "1.5.0"
 #define AppPublisher "Ghraven"
-#define AppURL       "https://github.com/Ghraven/Agent-Meeting-Room"
+#define AppURL       "https://github.com/GhravenLabs/Agent-Meeting-Room"
 #define AppExeName   "AgentMeetingRoom.exe"
 
 [Setup]
