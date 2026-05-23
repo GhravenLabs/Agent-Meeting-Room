@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from agents import run_agents, run_free_talk_thread
-from memory import save_to_obsidian, get_recent_memory
+from memory import save_to_obsidian, get_recent_memory, get_memory_status
 import os
+import sys
 import json
 import queue
 import threading
 import uuid
+import requests as http_requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,42 +18,101 @@ talk_sessions    = {}   # session_id -> queue.Queue
 talk_stop_events = {}   # session_id -> threading.Event
 
 
+# ── Startup checks ────────────────────────────────────────────
+def check_ollama() -> bool:
+    """Return True if Ollama is reachable on localhost:11434."""
+    try:
+        r = http_requests.get("http://localhost:11434", timeout=3)
+        return r.status_code < 500
+    except Exception:
+        return False
+
+
+def check_ollama_models() -> list:
+    """Return list of pulled Ollama model names."""
+    try:
+        r = http_requests.get("http://localhost:11434/api/tags", timeout=5)
+        if r.status_code == 200:
+            return [m["name"] for m in r.json().get("models", [])]
+    except Exception:
+        pass
+    return []
+
+
+def print_startup_banner(ollama_ok: bool, models: list, memory: dict):
+    sep = "=" * 50
+    print(sep)
+    print("  Agent Meeting Room")
+    print(sep)
+
+    # Ollama
+    if ollama_ok:
+        print(f"  ✓ Ollama running  ({len(models)} model(s) available)")
+        if models:
+            for m in models[:6]:
+                print(f"      · {m}")
+            if len(models) > 6:
+                print(f"      ... and {len(models)-6} more")
+    else:
+        print("  ✗ Ollama NOT found — local agents will not respond")
+        print("    → Install: https://ollama.com")
+        print("    → Then run: ollama pull mistral")
+
+    # Memory
+    mem_backend = memory["backend"]
+    if mem_backend == "obsidian":
+        print(f"  ✓ Memory: Obsidian vault  ({memory['path']})")
+    elif mem_backend == "local":
+        print(f"  ✓ Memory: local folder  ({memory['path']})")
+    else:
+        print("  · Memory: disabled  (set MEMORY_BACKEND=local to enable)")
+
+    # Claude
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if api_key and not api_key.startswith("your_"):
+        print("  ✓ Claude API key found  (@claude available)")
+    else:
+        print("  · Claude API: no key set  (@claude will not respond)")
+        print("    → Add ANTHROPIC_API_KEY to .env for @claude")
+
+    print(sep)
+    print("  Open: http://localhost:5000")
+    print(sep)
+
+
+# ── Routes ───────────────────────────────────────────────────
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
+@app.route("/status")
+def status():
+    """Health/status endpoint — used by frontend to show live state."""
+    ollama_ok = check_ollama()
+    models    = check_ollama_models() if ollama_ok else []
+    memory    = get_memory_status()
+    api_key   = os.getenv("ANTHROPIC_API_KEY", "")
+    return jsonify({
+        "ollama":  {"running": ollama_ok, "models": models},
+        "memory":  memory,
+        "claude":  {"configured": bool(api_key and not api_key.startswith("your_"))},
+    })
+
+
 @app.route("/chat", methods=["POST"])
 def chat():
-    data       = request.json
-    user_msg   = data.get("message", "").strip()
+    data     = request.json
+    user_msg = data.get("message", "").strip()
     if not user_msg:
         return jsonify({"error": "empty message"}), 400
 
-    # Add user message to history
-    conversation_history.append({
-        "role":    "user",
-        "content": user_msg
-    })
-
-    # Get recent memory context
+    conversation_history.append({"role": "user", "content": user_msg})
     memory_context = get_recent_memory()
+    responses = run_agents(user_msg, conversation_history, memory_context)
 
-    # Run agents based on mentions
-    responses = run_agents(
-        user_msg,
-        conversation_history,
-        memory_context
-    )
-
-    # Add responses to history
     for r in responses:
-        conversation_history.append({
-            "role":    r["agent"],
-            "content": r["message"]
-        })
-
-    # Keep history manageable
+        conversation_history.append({"role": r["agent"], "content": r["message"]})
     if len(conversation_history) > 50:
         conversation_history.pop(0)
 
@@ -64,7 +125,7 @@ def save_memory():
     content = data.get("content", "")
     title   = data.get("title", "Meeting note")
     result  = save_to_obsidian(title, content)
-    return jsonify({"saved": result})
+    return jsonify({"saved": result, "backend": get_memory_status()["backend"]})
 
 
 @app.route("/clear", methods=["POST"])
@@ -84,11 +145,11 @@ def start_talk():
     q          = queue.Queue()
     stop_event = threading.Event()
 
-    # Evict oldest session if map grows too large (prevents memory leak on abandoned sessions)
     if len(talk_sessions) > 100:
         oldest = next(iter(talk_sessions))
         talk_sessions.pop(oldest, None)
         talk_stop_events.pop(oldest, None)
+
     talk_sessions[session_id]    = q
     talk_stop_events[session_id] = stop_event
 
@@ -98,7 +159,6 @@ def start_talk():
         daemon=True
     )
     thread.start()
-
     return jsonify({"session_id": session_id})
 
 
@@ -116,7 +176,7 @@ def talk_stream(session_id):
                 except queue.Empty:
                     break
                 if msg is None:
-                    yield "data: {\"done\": true}\n\n"
+                    yield 'data: {"done": true}\n\n'
                     break
                 yield f"data: {json.dumps(msg)}\n\n"
         finally:
@@ -126,10 +186,7 @@ def talk_stream(session_id):
     return Response(
         stream_with_context(generate()),
         mimetype="text/event-stream",
-        headers={
-            "Cache-Control":    "no-cache",
-            "X-Accel-Buffering": "no"
-        }
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
     )
 
 
@@ -142,8 +199,8 @@ def stop_talk(session_id):
 
 
 if __name__ == "__main__":
-    print("=" * 45)
-    print("  Agent Meeting Room starting...")
-    print("  Open: http://localhost:5000")
-    print("=" * 45)
+    ollama_ok = check_ollama()
+    models    = check_ollama_models() if ollama_ok else []
+    memory    = get_memory_status()
+    print_startup_banner(ollama_ok, models, memory)
     app.run(debug=False, port=5000)
