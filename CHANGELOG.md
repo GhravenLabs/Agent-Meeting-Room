@@ -11,6 +11,17 @@ All notable changes to Agent Meeting Room are documented here.
 
 ---
 
+## [1.5.0] — 2026-05-23
+
+### Added
+- Retry logic in `ask_ollama()` — retries once with a 2s backoff before returning a user-friendly unavailable message (instead of raw exception string)
+
+### Changed
+- Updated Claude model to `claude-sonnet-4-5` in `agents.py` and README agents table
+- Marked completed milestones: multi-agent chat architecture, Claude headmaster integration, documented + pushed to GitHub
+
+---
+
 ## [1.4.0] — 2026-05-21
 
 ### Fixed
