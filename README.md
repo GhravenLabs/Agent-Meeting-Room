@@ -1,8 +1,12 @@
 <h1 align="center">🏠 Agent Meeting Room</h1>
 
 <p align="center">
+  <img src="assets/icon_256.png" width="96" alt="Agent Meeting Room logo" />
+</p>
+
+<p align="center">
   A Flask web app where you <code>@mention</code> AI agents into a live group chat.<br/>
-  Local models via Ollama · Claude API on demand · Streaming debates · Obsidian memory
+  Local models via Ollama · Claude API on demand · Streaming debates · Obsidian memory · Add unlimited agents
 </p>
 
 <p align="center">
@@ -46,6 +50,67 @@ All local agents run **any Ollama-compatible model** — swap by editing the `"m
 | `@claude` | `claude-sonnet-4-5` | API | Collaborative nuanced advisor |
 
 > **Swap a model:** open `agents.py` → change the `"model"` value to anything from `ollama list`.
+
+---
+
+## Adding your own agents — unlimited LLMs
+
+The `AGENTS` dict in `agents.py` is the only place you need to touch. You can add **as many models as your hardware can handle** — any model in `ollama list` works.
+
+**Step 1 — pull the model**
+```bash
+ollama pull llama3
+ollama pull qwen2:7b
+ollama pull codellama
+# or any model from https://ollama.com/library
+```
+
+**Step 2 — add an entry to `agents.py`**
+```python
+"llama3": {
+    "model":       "llama3",          # must match exactly what ollama list shows
+    "name":        "Llama3",          # display name in the UI
+    "color":       "#E8A838",         # any hex color for the chat bubble
+    "personality": """You are Llama3, a well-rounded and helpful thinker.
+You are direct, practical, and friendly. Keep responses under 150 words
+unless asked for detail. You are in a group meeting with other AI agents."""
+},
+```
+
+**Step 3 — restart the app.** Your new agent shows up in the agents bar automatically and is @mentionable by the key name (e.g. `@llama3`).
+
+> **Hardware guidance**
+> | VRAM | What runs comfortably |
+> |------|----------------------|
+> | 6–8 GB | 2–3 agents simultaneously (e.g. Mistral + Phi3 + Gemma2) |
+> | 12–16 GB | 4–5 agents (full default set + 1–2 extras) |
+> | 24 GB+ | 6+ agents, larger 13B+ models |
+>
+> Agents load on-demand per message — you're not running them all in parallel unless using `@all` or `@debate`.
+
+
+---
+
+## Download & install
+
+### Option A — Portable EXE (simplest)
+1. Go to [**Releases**](https://github.com/Ghraven/Agent-Meeting-Room/releases/latest)
+2. Download `AgentMeetingRoom.exe`
+3. Double-click — browser opens automatically
+
+### Option B — Full installer
+1. Download `AgentMeetingRoom-Setup.exe` from [Releases](https://github.com/Ghraven/Agent-Meeting-Room/releases/latest)
+2. Run the installer — creates desktop shortcut + Start Menu entry
+3. Launch from your desktop
+
+> **Prerequisite for both:** [Ollama](https://ollama.com) must be installed and at least one model pulled.
+> ```bash
+> ollama pull mistral
+> ```
+
+### Option C — Run from source (developers)
+See [Quick Start](#quick-start) below.
+
 
 ---
 
