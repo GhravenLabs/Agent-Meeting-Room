@@ -5,8 +5,8 @@ A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents
 
 ## Stack
 - Python 3.11, Flask
-- Local agents via Ollama: Mistral, Phi3, Gemma2:2b, DeepSeek-r1:7b
-- Cloud agent: Anthropic Claude API (`claude-3-5-sonnet-20241022`)
+- Local agents via Ollama: Mistral, Phi3, Gemma2:2b, DeepSeek-r1:7b (unlimited — add any Ollama model in agents.py AGENTS dict)
+- Cloud agent: Anthropic Claude API (`claude-sonnet-4-5`)
 - Frontend: Vanilla JS with Server-Sent Events for streaming
 - Memory: Obsidian Markdown vault
 
@@ -36,3 +36,12 @@ A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents
 - `keep_alive: 0` is set in Ollama calls to unload models from VRAM after each response (RAM-friendly)
 - Conversation history is capped at 50 messages in-memory (no DB)
 - Free Talk sessions use `threading.Event` for graceful stop
+
+## Release / distribution
+- `launcher.py` — PyInstaller entry point (auto-opens browser, loads .env from exe dir)
+- `AgentMeetingRoom.spec` — PyInstaller single-file build spec
+- `AgentMeetingRoom_Setup.iss` — Inno Setup v6 installer script
+- `build.bat` — one-click build on Windows
+- `.github/workflows/release.yml` — push tag `v*.*.*` to trigger automated build + GitHub Release
+- `assets/icon.ico` — app icon for exe and installer
+
