@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#0f0f1a"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1D9E75"/>
+      <stop offset="100%" style="stop-color:#0d6b50"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7F77DD"/>
+      <stop offset="100%" style="stop-color:#534AB7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="256" height="256" rx="48" ry="48" fill="url(#bg)"/>
+
+  <!-- Circuit trace lines (background grid feel) -->
+  <!-- Horizontal traces -->
+  <line x1="32" y1="80"  x2="224" y2="80"  stroke="#1D9E75" stroke-width="1" stroke-opacity="0.15"/>
+  <line x1="32" y1="128" x2="224" y2="128" stroke="#7F77DD" stroke-width="1" stroke-opacity="0.12"/>
+  <line x1="32" y1="176" x2="224" y2="176" stroke="#1D9E75" stroke-width="1" stroke-opacity="0.15"/>
+  <!-- Vertical traces -->
+  <line x1="80"  y1="32" x2="80"  y2="224" stroke="#1D9E75" stroke-width="1" stroke-opacity="0.12"/>
+  <line x1="128" y1="32" x2="128" y2="224" stroke="#7F77DD" stroke-width="1" stroke-opacity="0.10"/>
+  <line x1="176" y1="32" x2="176" y2="224" stroke="#1D9E75" stroke-width="1" stroke-opacity="0.12"/>
+
+  <!-- Circuit nodes at intersections -->
+  <circle cx="80"  cy="80"  r="3" fill="#1D9E75" opacity="0.35"/>
+  <circle cx="176" cy="80"  r="3" fill="#7F77DD" opacity="0.35"/>
+  <circle cx="80"  cy="176" r="3" fill="#7F77DD" opacity="0.35"/>
+  <circle cx="176" cy="176" r="3" fill="#1D9E75" opacity="0.35"/>
+
+  <!-- Main chat bubble (large, teal outline) -->
+  <path d="M 52 72 Q 52 56 68 56 L 188 56 Q 204 56 204 72 L 204 136 Q 204 152 188 152 L 110 152 L 84 178 L 88 152 L 68 152 Q 52 152 52 136 Z"
+        fill="#1a1a2e" stroke="url(#teal)" stroke-width="3"/>
+
+  <!-- Inner chat bubble (smaller, purple, overlapping bottom-right) -->
+  <path d="M 98 140 Q 98 128 110 128 L 200 128 Q 212 128 212 140 L 212 184 Q 212 196 200 196 L 162 196 L 148 210 L 152 196 L 110 196 Q 98 196 98 184 Z"
+        fill="#1a1a2e" stroke="url(#purple)" stroke-width="2.5"/>
+
+  <!-- Circuit dot nodes on main bubble border -->
+  <circle cx="52"  cy="104" r="4" fill="#1D9E75"/>
+  <circle cx="204" cy="104" r="4" fill="#1D9E75"/>
+  <circle cx="128" cy="56"  r="4" fill="#1D9E75"/>
+
+  <!-- Message lines inside main bubble -->
+  <line x1="76" y1="88"  x2="180" y2="88"  stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="76" y1="104" x2="156" y2="104" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.7"/>
+  <line x1="76" y1="120" x2="168" y2="120" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-opacity="0.45"/>
+
+  <!-- Message line inside inner bubble -->
+  <line x1="116" y1="155" x2="196" y2="155" stroke="#7F77DD" stroke-width="2" stroke-linecap="round"/>
+  <line x1="116" y1="169" x2="176" y2="169" stroke="#7F77DD" stroke-width="2" stroke-linecap="round" stroke-opacity="0.6"/>
+
+  <!-- Glowing circuit node bottom right — accent -->
+  <circle cx="204" cy="152" r="6" fill="#7F77DD" opacity="0.9"/>
+  <circle cx="204" cy="152" r="10" fill="none" stroke="#7F77DD" stroke-width="1.5" opacity="0.35"/>
+
+  <!-- Top-left corner circuit L-trace -->
+  <polyline points="32,56 32,40 48,40" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <circle cx="32" cy="40" r="2.5" fill="#1D9E75" opacity="0.6"/>
+
+  <!-- Bottom-right corner circuit L-trace -->
+  <polyline points="224,200 224,216 208,216" fill="none" stroke="#7F77DD" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <circle cx="224" cy="216" r="2.5" fill="#7F77DD" opacity="0.6"/>
+</svg>
