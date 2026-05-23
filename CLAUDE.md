@@ -29,7 +29,18 @@ A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents
 
 ## Environment variables
 - `ANTHROPIC_API_KEY` — required for Claude
-- `OBSIDIAN_VAULT_PATH` — optional, defaults to `C:/Users/Administrator/Documents/ObsidianVault/AgentMeetings`
+- `ANTHROPIC_API_KEY` — required for @claude
+- `MEMORY_BACKEND` — `auto` (default), `local`, `obsidian`, or `none`
+- `OBSIDIAN_VAULT_PATH` — only needed when MEMORY_BACKEND=obsidian
+- `LOCAL_MEMORY_PATH` — override for local backend folder (default: ./meeting_notes/)
+- `FREE_TALK_DURATION` — seconds for free talk mode (default: 300)
+- `PORT` — server port (default: 5000)
+
+## Startup behaviour
+- `print_startup_banner()` in app.py runs on start — checks Ollama, lists models, shows memory backend, checks Claude key
+- `/status` endpoint returns JSON with live Ollama/memory/Claude state (used for health checks)
+- If Ollama is not running, agents return `[model unavailable — is Ollama running?]` (not a crash)
+- If memory backend is `none`, save_to_obsidian() is a no-op (returns False silently)
 
 ## Dev notes
 - Ollama must be running on `localhost:11434` before starting the app
