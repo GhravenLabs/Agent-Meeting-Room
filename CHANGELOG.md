@@ -11,6 +11,28 @@ All notable changes to Agent Meeting Room are documented here.
 
 ---
 
+## [1.7.0] — 2026-05-23
+
+### Added
+- **Pluggable memory system** — `MEMORY_BACKEND` env var selects `local` (default), `obsidian`, or `none`
+  - `local`: saves notes to `./meeting_notes/` — zero extra software required
+  - `obsidian`: original behaviour, requires Obsidian vault path
+  - `none`: memory completely disabled
+  - `auto`: uses Obsidian if vault path set, otherwise falls back to local
+- **Startup check banner** — on launch, app.py now prints Ollama status (running/not + model list), memory backend, and Claude API key status with fix hints
+- `/status` endpoint — returns live JSON state of Ollama, memory, and Claude for health checks
+- `get_memory_status()` in memory.py — returns active backend info
+- `.env.example` fully documented with all variables, options, and examples for Windows/Mac/Linux
+
+### Changed
+- Obsidian is now **optional** — local folder memory works out of the box with no extra setup
+- Memory save now includes backend name in note metadata
+
+### Fixed
+- Startup no longer silently fails when Ollama is offline — clear message with install link printed
+
+---
+
 ## [1.6.0] — 2026-05-23
 
 ### Added
