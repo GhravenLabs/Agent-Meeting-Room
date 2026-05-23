@@ -11,6 +11,23 @@ All notable changes to Agent Meeting Room are documented here.
 
 ---
 
+## [1.6.0] — 2026-05-23
+
+### Added
+- `launcher.py` — PyInstaller entry point; starts Flask server and auto-opens browser
+- `AgentMeetingRoom.spec` — PyInstaller build spec (single-file portable `.exe`)
+- `AgentMeetingRoom_Setup.iss` — Inno Setup installer script (desktop shortcut, Start Menu, Ollama check)
+- `build.bat` — one-click Windows build script for the `.exe`
+- `.github/workflows/release.yml` — GitHub Actions workflow: push a `v*.*.*` tag → auto-builds and publishes a GitHub Release with `.exe` attached
+- `assets/icon.ico`, `assets/icon.png`, `assets/logo.svg` — techy/AI circuit + chat hybrid logo (dark purple/teal)
+- README: "Adding your own agents — unlimited LLMs" section with hardware guidance table
+- README: Download & install section (portable EXE, full installer, source)
+
+### Changed
+- `start.bat` — now checks if Ollama is running before starting Flask, auto-starts it if not
+
+---
+
 ## [1.5.0] — 2026-05-23
 
 ### Added
