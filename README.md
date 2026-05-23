@@ -43,7 +43,7 @@ All local agents run **any Ollama-compatible model** — swap by editing the `"m
 | `@phi3` | `phi3` | ~2 GB | Creative lateral thinker |
 | `@gemma2` | `gemma2:2b` | ~1.5 GB | Balanced careful summarizer |
 | `@deepseek` | `deepseek-r1:7b` | ~4.7 GB | Deep step-by-step reasoner |
-| `@claude` | `claude-3-5-sonnet-20241022` | API | Collaborative nuanced advisor |
+| `@claude` | `claude-sonnet-4-5` | API | Collaborative nuanced advisor |
 
 > **Swap a model:** open `agents.py` → change the `"model"` value to anything from `ollama list`.
 
