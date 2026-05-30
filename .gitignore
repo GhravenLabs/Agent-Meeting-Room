@@ -28,3 +28,9 @@ Thumbs.db
 
 # Obsidian vault (local only)
 meeting_memory.md
+
+# Local room/agent customization
+agent_profiles.json
+
+# Local development logs
+*.log

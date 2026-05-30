@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from agents import run_agents, run_free_talk_thread
 from memory import save_to_obsidian, get_recent_memory, get_memory_status
+from customization import load_config, save_config, get_room_config
 import os
 import sys
 import json
@@ -97,7 +98,26 @@ def status():
         "ollama":  {"running": ollama_ok, "models": models},
         "memory":  memory,
         "claude":  {"configured": bool(api_key and not api_key.startswith("your_"))},
+        "customization": load_config(),
     })
+
+
+@app.route("/customization", methods=["GET"])
+def get_customization():
+    return jsonify(load_config())
+
+
+@app.route("/customization", methods=["POST"])
+def update_customization():
+    data = request.json or {}
+    return jsonify(save_config(data))
+
+
+@app.route("/customization/reset", methods=["POST"])
+def reset_customization():
+    from customization import default_config
+
+    return jsonify(save_config(default_config()))
 
 
 @app.route("/chat", methods=["POST"])
@@ -144,6 +164,11 @@ def start_talk():
     session_id = uuid.uuid4().hex[:10]
     q          = queue.Queue()
     stop_event = threading.Event()
+    try:
+        duration = int(data.get("duration") or get_room_config().get("free_talk_duration", 300))
+    except (TypeError, ValueError):
+        duration = 300
+    duration = max(60, min(1800, duration))
 
     if len(talk_sessions) > 100:
         oldest = next(iter(talk_sessions))
@@ -155,11 +180,11 @@ def start_talk():
 
     thread = threading.Thread(
         target=run_free_talk_thread,
-        args=(topic, list(conversation_history), q, stop_event),
+        args=(topic, list(conversation_history), q, stop_event, duration),
         daemon=True
     )
     thread.start()
-    return jsonify({"session_id": session_id})
+    return jsonify({"session_id": session_id, "duration": duration})
 
 
 @app.route("/talk_stream/<session_id>")

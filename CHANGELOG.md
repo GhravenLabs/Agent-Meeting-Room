@@ -4,14 +4,15 @@ All notable changes to Agent Meeting Room are documented here.
 
 ## [Unreleased]
 
+### Added
+- Customize room identity, agent names, avatar/logo URLs, accent colors, persona cards, enabled agents, and saved presets from the UI.
+- Configure Free Talk duration for 5, 10, 15, or 30 minute sessions.
+- Optional browser TTS playback with per-agent voice name hints.
+
 ### Planned
 - Export meeting transcript as Markdown
 - Configurable agent response length via UI slider
 - Dark/light theme toggle
-- Optional agent customization: display names, avatars/logos, accent colors, and persona cards
-- Saved team presets for reusable rooms such as Product Review, Code Review, Debate Panel, or Creative Room
-- Configurable Free Talk duration, including longer 30-minute discussions
-- Optional TTS voice profiles so agents can speak with distinct voices
 
 ---
 

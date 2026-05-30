@@ -49,6 +49,16 @@ asked for detail. You are in a group meeting with other AI agents."""
 CLAUDE_MODEL = "claude-sonnet-4-5"
 
 
+def get_effective_agents():
+    """Return runtime agent profiles with saved UI customizations applied."""
+    try:
+        from customization import get_effective_agents as _get_effective_agents
+
+        return _get_effective_agents()
+    except Exception:
+        return AGENTS
+
+
 def build_context(conversation_history, memory_context=""):
     """Build conversation context string for agents."""
     context = ""
@@ -138,10 +148,13 @@ def run_debate(message, conversation_history, memory_context):
     """
     responses = []
     context   = build_context(conversation_history, memory_context)
+    agents    = get_effective_agents()
 
     # Round 1 — Independent answers
     round1 = {}
-    for key, agent in AGENTS.items():
+    for key, agent in agents.items():
+        if not agent.get("enabled", True):
+            continue
         print(f"[Debate] Round 1 — asking {agent['name']}...")
         answer = ask_ollama(
             agent["model"],
@@ -154,21 +167,25 @@ def run_debate(message, conversation_history, memory_context):
             "agent":   agent["name"],
             "model":   key,
             "color":   agent["color"],
+            "avatar":  agent.get("avatar", ""),
+            "voice":   agent.get("voice", ""),
             "message": answer,
             "round":   1
         })
 
     # Build Round 1 summary for Round 2
     round1_summary = "\n\n".join([
-        f"{AGENTS[k]['name']} said: {v}"
+        f"{agents[k]['name']} said: {v}"
         for k, v in round1.items()
     ])
 
     # Round 2 — Each agent reacts to others
-    for key, agent in AGENTS.items():
+    for key, agent in agents.items():
+        if key not in round1:
+            continue
         others = {k: v for k, v in round1.items() if k != key}
         others_text = "\n".join([
-            f"{AGENTS[k]['name']}: {v}"
+            f"{agents[k]['name']}: {v}"
             for k, v in others.items()
         ])
 
@@ -193,6 +210,8 @@ Be direct and concise — under 100 words."""
             "agent":   agent["name"],
             "model":   key,
             "color":   agent["color"],
+            "avatar":  agent.get("avatar", ""),
+            "voice":   agent.get("voice", ""),
             "message": reaction,
             "round":   2
         })
@@ -210,9 +229,10 @@ Summarize in 2-3 sentences:
 3. What is the best answer based on the discussion?"""
 
     print(f"[Debate] Round 3 — summarizing...")
+    summary_agent = agents.get("gemma2", AGENTS["gemma2"])
     summary = ask_ollama(
-        "gemma2:2b",
-        AGENTS["gemma2"]["personality"],
+        summary_agent["model"],
+        summary_agent["personality"],
         summary_prompt,
         ""
     )
@@ -241,6 +261,7 @@ def run_agents(message, conversation_history, memory_context=""):
     """
     msg_lower = message.lower()
     context   = build_context(conversation_history, memory_context)
+    agents    = get_effective_agents()
     responses = []
 
     # Debate mode
@@ -269,7 +290,7 @@ def run_agents(message, conversation_history, memory_context=""):
 
     # @all or no mention = all agents
     if "@all" in msg_lower or not mentioned:
-        mentioned = list(AGENTS.keys())
+        mentioned = [key for key, agent in agents.items() if agent.get("enabled", True)]
 
     # Clean message of all mentions
     clean_msg = message
@@ -279,7 +300,9 @@ def run_agents(message, conversation_history, memory_context=""):
 
     # Ask each mentioned agent
     for key in mentioned:
-        agent = AGENTS[key]
+        agent = agents[key]
+        if not agent.get("enabled", True):
+            continue
         print(f"[Agents] Asking {agent['name']}...")
         reply = ask_ollama(
             agent["model"],
@@ -291,6 +314,8 @@ def run_agents(message, conversation_history, memory_context=""):
             "agent":   agent["name"],
             "model":   key,
             "color":   agent["color"],
+            "avatar":  agent.get("avatar", ""),
+            "voice":   agent.get("voice", ""),
             "message": reply,
             "round":   1
         })
@@ -310,13 +335,17 @@ def run_free_talk_thread(topic, conversation_history, output_queue, stop_event, 
         duration = int(_os.getenv("FREE_TALK_DURATION", "300"))
     start_time = time.time()
     talk_history = []
-    agent_keys = list(AGENTS.keys())
+    agents = get_effective_agents()
+    agent_keys = [key for key, agent in agents.items() if agent.get("enabled", True)]
+    if not agent_keys:
+        output_queue.put(None)
+        return
     initial_context = build_context(conversation_history)
     turn = 0
 
     while not stop_event.is_set() and (time.time() - start_time) < duration:
         key = agent_keys[turn % len(agent_keys)]
-        agent = AGENTS[key]
+        agent = agents[key]
 
         if talk_history:
             talk_context = "DISCUSSION SO FAR:\n" + "\n".join(
@@ -348,6 +377,8 @@ Keep it under 80 words. Be conversational, not formal."""
             "agent":   agent["name"],
             "model":   key,
             "color":   agent["color"],
+            "avatar":  agent.get("avatar", ""),
+            "voice":   agent.get("voice", ""),
             "message": reply,
             "round":   1,
             "elapsed": int(time.time() - start_time)
@@ -375,9 +406,10 @@ Write a concise summary (3-5 sentences) covering:
 2. Where agents agreed or disagreed
 3. The key insight or conclusion from the discussion"""
 
+    summary_agent = agents.get("gemma2", AGENTS["gemma2"])
     summary = ask_ollama(
-        "gemma2:2b",
-        AGENTS["gemma2"]["personality"],
+        summary_agent["model"],
+        summary_agent["personality"],
         summary_prompt,
         ""
     )

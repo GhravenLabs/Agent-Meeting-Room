@@ -392,6 +392,194 @@
 
   .btn-clear:hover { color: #888; border-color: #3a3a45; }
 
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .room-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #101018;
+    border: 1px solid #2a2a35;
+    display: none;
+  }
+
+  .avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f0f13;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .agent-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+
+  .modal-backdrop.active { display: flex; }
+
+  .modal {
+    width: min(980px, 100%);
+    max-height: 92vh;
+    overflow: hidden;
+    background: #15151d;
+    border: 1px solid #2a2a35;
+    border-radius: 8px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid #2a2a35;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 16px;
+  }
+
+  .settings-panel {
+    border: 1px solid #252532;
+    border-radius: 8px;
+    padding: 12px;
+    background: #101018;
+  }
+
+  .settings-panel h3 {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .field label {
+    font-size: 11px;
+    color: #777;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    background: #0f0f13;
+    border: 1px solid #2a2a35;
+    color: #e0ddd5;
+    border-radius: 6px;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 12px;
+  }
+
+  .field textarea {
+    min-height: 76px;
+    resize: vertical;
+  }
+
+  .agent-editor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .agent-editor-tab {
+    border: 1px solid #2a2a35;
+    background: #15151d;
+    color: #e0ddd5;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .agent-editor-tab.active {
+    border-color: #777;
+    background: #20202a;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #2a2a35;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: #2a2a45;
+    border: 1px solid #4a4a70;
+    color: #d8d5ff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid #2a2a35;
+    color: #aaa;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 780px) {
+    .modal-body { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
   .empty-state {
     flex: 1;
     display: flex;
@@ -431,48 +619,19 @@
 <div class="header">
   <div class="header-left">
     <div class="status-dot"></div>
+    <img class="room-logo" id="room-logo" alt="">
     <div>
-      <h1>Agent Meeting Room</h1>
-      <p>4 local AI agents + Claude on demand</p>
+      <h1 id="room-title">Agent Meeting Room</h1>
+      <p id="room-subtitle">4 local AI agents + Claude on demand</p>
     </div>
   </div>
-  <button class="btn-clear" onclick="clearChat()">Clear chat</button>
+  <div class="header-actions">
+    <button class="btn-clear" onclick="openSettings()">Customize</button>
+    <button class="btn-clear" onclick="clearChat()">Clear chat</button>
+  </div>
 </div>
 
-<div class="agents-bar">
-  <div class="agent-chip" style="color:#378ADD;border-color:#378ADD22;background:#378ADD11"
-       onclick="insertMention('@mistral')">
-    <div class="dot" style="background:#378ADD"></div>Mistral
-  </div>
-  <div class="agent-chip" style="color:#1D9E75;border-color:#1D9E7522;background:#1D9E7511"
-       onclick="insertMention('@phi3')">
-    <div class="dot" style="background:#1D9E75"></div>Phi3
-  </div>
-  <div class="agent-chip" style="color:#7F77DD;border-color:#7F77DD22;background:#7F77DD11"
-       onclick="insertMention('@gemma2')">
-    <div class="dot" style="background:#7F77DD"></div>Gemma2
-  </div>
-  <div class="agent-chip" style="color:#E05C5C;border-color:#E05C5C22;background:#E05C5C11"
-       onclick="insertMention('@deepseek')">
-    <div class="dot" style="background:#E05C5C"></div>DeepSeek
-  </div>
-  <div class="agent-chip" style="color:#534AB7;border-color:#534AB722;background:#534AB711"
-       onclick="insertMention('@claude')">
-    <div class="dot" style="background:#534AB7"></div>Claude
-  </div>
-  <div class="agent-chip" style="color:#e0ddd5;border-color:#33333a;background:#1a1a22"
-       onclick="insertMention('@all')">
-    <div class="dot" style="background:#e0ddd5"></div>All agents
-  </div>
-  <div class="agent-chip" style="color:#BA7517;border-color:#BA751722;background:#BA751711"
-       onclick="insertMention('@debate')">
-    <div class="dot" style="background:#BA7517"></div>Debate
-  </div>
-  <div class="agent-chip" style="color:#1D9E75;border-color:#1D9E7544;background:#0d1a12"
-       onclick="insertMention('@talk')">
-    <div class="dot" style="background:#1D9E75;animation:livepulse 1s ease-in-out infinite"></div>Free Talk
-  </div>
-</div>
+<div class="agents-bar" id="agents-bar"></div>
 
 <!-- Talk mode banner (shown during active session) -->
 <div class="talk-banner" id="talk-banner">
@@ -499,7 +658,7 @@
       <strong style="color:#555">@claude</strong> — most capable (paid API)<br>
       <strong style="color:#555">@all</strong> — all 4 local agents<br>
       <strong style="color:#555">@debate</strong> — structured debate with rounds<br>
-      <strong style="color:#555">@talk</strong> — agents talk freely for 5 min
+      <strong style="color:#555">@talk</strong> - agents talk freely for the selected duration
     </p>
   </div>
 </div>
@@ -528,6 +687,134 @@
 
 <div class="toast" id="toast">Saved to Obsidian</div>
 
+<div class="modal-backdrop" id="settings-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Customize Room</h2>
+      <button class="btn-clear" onclick="closeSettings()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="settings-panel">
+        <h3>Agents</h3>
+        <div class="agent-editor-list" id="agent-editor-list"></div>
+      </div>
+      <div>
+        <div class="settings-panel">
+          <h3>Room</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label>Room title</label>
+              <input id="room-title-input">
+            </div>
+            <div class="field">
+              <label>Room logo URL</label>
+              <input id="room-logo-input" placeholder="https://...">
+            </div>
+          </div>
+          <div class="field">
+            <label>Subtitle / purpose</label>
+            <input id="room-subtitle-input">
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Free Talk duration</label>
+              <select id="free-talk-duration-input">
+                <option value="300">5 minutes</option>
+                <option value="600">10 minutes</option>
+                <option value="900">15 minutes</option>
+                <option value="1800">30 minutes</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>TTS</label>
+              <select id="tts-enabled-input">
+                <option value="false">Off</option>
+                <option value="true">On after each agent reply</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" style="margin-top:12px">
+          <h3>Agent Profile</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label>Display name</label>
+              <input id="agent-name-input">
+            </div>
+            <div class="field">
+              <label>Accent color</label>
+              <input id="agent-color-input" type="color">
+            </div>
+          </div>
+          <div class="field">
+            <label>Avatar/logo URL</label>
+            <input id="agent-avatar-input" placeholder="Optional image URL">
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Role</label>
+              <input id="agent-role-input" placeholder="Researcher, skeptic, builder...">
+            </div>
+            <div class="field">
+              <label>Tone</label>
+              <input id="agent-tone-input" placeholder="Warm, blunt, playful...">
+            </div>
+          </div>
+          <div class="field">
+            <label>Expertise</label>
+            <input id="agent-expertise-input" placeholder="Coding, product, finance...">
+          </div>
+          <div class="field">
+            <label>Meeting behavior</label>
+            <textarea id="agent-behavior-input" placeholder="Always challenge assumptions, summarize decisions, ask clarifying questions..."></textarea>
+          </div>
+          <div class="field">
+            <label>Base personality prompt</label>
+            <textarea id="agent-personality-input"></textarea>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Voice name hint</label>
+              <input id="agent-voice-input" placeholder="Browser voice name, optional">
+            </div>
+            <div class="field">
+              <label>Enabled</label>
+              <select id="agent-enabled-input">
+                <option value="true">Enabled</option>
+                <option value="false">Hidden from @all / Free Talk</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" style="margin-top:12px">
+          <h3>Presets</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label>Load preset</label>
+              <select id="preset-select"></select>
+            </div>
+            <div class="field">
+              <label>Save current as</label>
+              <input id="preset-name-input" placeholder="My Review Team">
+            </div>
+          </div>
+          <button class="btn-secondary" onclick="applyPreset()">Apply preset</button>
+          <button class="btn-secondary" onclick="savePreset()">Save preset</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="resetCustomization()">Reset defaults</button>
+      <div>
+        <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+        <button class="btn-primary" onclick="saveCustomization()">Save customization</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   const messagesEl = document.getElementById('messages');
   const inputEl    = document.getElementById('input');
@@ -536,8 +823,12 @@
   const talkBanner = document.getElementById('talk-banner');
   const talkTimerEl = document.getElementById('talk-timer');
   const talkTopicEl = document.getElementById('talk-topic-label');
+  const agentsBar = document.getElementById('agents-bar');
+  const settingsModal = document.getElementById('settings-modal');
 
-  const agentColors = {
+  let customization = null;
+  let selectedAgentKey = 'mistral';
+  let agentColors = {
     'Mistral':  '#378ADD',
     'Phi3':     '#1D9E75',
     'Gemma2':   '#7F77DD',
@@ -551,6 +842,214 @@
   let talkEventSource    = null;
   let talkTimerInterval  = null;
   let talkEndTime        = null;
+
+  async function loadCustomization(){
+    const res = await fetch('/customization');
+    customization = await res.json();
+    applyCustomizationToUI();
+  }
+
+  function activeAgents(){
+    return Object.values(customization?.agents || {}).filter(agent => agent.enabled !== false);
+  }
+
+  function agentInitials(agent){
+    const name = agent.display_name || agent.name || agent.key || '?';
+    return name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
+  }
+
+  function avatarHtml(agent, sizeClass='avatar'){
+    const color = agent.color || '#888';
+    const label = escapeHtml(agentInitials(agent));
+    if(agent.avatar){
+      return `<img class="${sizeClass}" src="${escapeHtml(agent.avatar)}" alt="">`;
+    }
+    return `<span class="${sizeClass}" style="background:${color}">${label}</span>`;
+  }
+
+  function applyCustomizationToUI(){
+    if(!customization) return;
+    const room = customization.room || {};
+    document.getElementById('room-title').textContent = room.title || 'Agent Meeting Room';
+    document.getElementById('room-subtitle').textContent = room.subtitle || room.purpose || '4 local AI agents + Claude on demand';
+    const logo = document.getElementById('room-logo');
+    if(room.logo){
+      logo.src = room.logo;
+      logo.style.display = 'block';
+    } else {
+      logo.removeAttribute('src');
+      logo.style.display = 'none';
+    }
+
+    agentColors = {'Claude':'#534AB7', 'Summary':'#BA7517'};
+    for(const agent of Object.values(customization.agents || {})){
+      agentColors[agent.display_name || agent.name] = agent.color;
+    }
+    renderAgentChips();
+    renderSettings();
+  }
+
+  function chipStyle(color){
+    return `color:${color};border-color:${color}33;background:${color}14`;
+  }
+
+  function renderAgentChips(){
+    if(!customization) return;
+    const chips = activeAgents().map(agent => `
+      <div class="agent-chip" style="${chipStyle(agent.color)}" onclick="insertMention('@${agent.key}')">
+        ${avatarHtml(agent)}${escapeHtml(agent.display_name || agent.name)}
+      </div>
+    `);
+    chips.push(`
+      <div class="agent-chip" style="color:#534AB7;border-color:#534AB733;background:#534AB714" onclick="insertMention('@claude')">
+        <span class="avatar" style="background:#534AB7">C</span>Claude
+      </div>
+      <div class="agent-chip" style="color:#e0ddd5;border-color:#33333a;background:#1a1a22" onclick="insertMention('@all')">
+        <div class="dot" style="background:#e0ddd5"></div>All agents
+      </div>
+      <div class="agent-chip" style="color:#BA7517;border-color:#BA751733;background:#BA751714" onclick="insertMention('@debate')">
+        <div class="dot" style="background:#BA7517"></div>Debate
+      </div>
+      <div class="agent-chip" style="color:#1D9E75;border-color:#1D9E7544;background:#0d1a12" onclick="insertMention('@talk')">
+        <div class="dot" style="background:#1D9E75;animation:livepulse 1s ease-in-out infinite"></div>Free Talk
+      </div>
+    `);
+    agentsBar.innerHTML = chips.join('');
+  }
+
+  function renderSettings(){
+    if(!customization) return;
+    const room = customization.room || {};
+    document.getElementById('room-title-input').value = room.title || '';
+    document.getElementById('room-logo-input').value = room.logo || '';
+    document.getElementById('room-subtitle-input').value = room.subtitle || room.purpose || '';
+    document.getElementById('free-talk-duration-input').value = String(room.free_talk_duration || 300);
+    document.getElementById('tts-enabled-input').value = String(Boolean(room.tts_enabled));
+
+    const list = document.getElementById('agent-editor-list');
+    list.innerHTML = Object.values(customization.agents).map(agent => `
+      <button class="agent-editor-tab ${agent.key === selectedAgentKey ? 'active' : ''}" onclick="selectAgent('${agent.key}')">
+        ${avatarHtml(agent)} <span>${escapeHtml(agent.display_name || agent.name)}</span>
+      </button>
+    `).join('');
+    renderAgentForm();
+    renderPresetSelect();
+  }
+
+  function selectAgent(key){
+    writeAgentForm();
+    selectedAgentKey = key;
+    renderSettings();
+  }
+
+  function currentAgent(){
+    return customization.agents[selectedAgentKey];
+  }
+
+  function renderAgentForm(){
+    const agent = currentAgent();
+    if(!agent) return;
+    document.getElementById('agent-name-input').value = agent.display_name || agent.name || '';
+    document.getElementById('agent-color-input').value = agent.color || '#888888';
+    document.getElementById('agent-avatar-input').value = agent.avatar || '';
+    document.getElementById('agent-role-input').value = agent.role || '';
+    document.getElementById('agent-tone-input').value = agent.tone || '';
+    document.getElementById('agent-expertise-input').value = agent.expertise || '';
+    document.getElementById('agent-behavior-input').value = agent.behavior || '';
+    document.getElementById('agent-personality-input').value = agent.personality || '';
+    document.getElementById('agent-voice-input').value = agent.voice || '';
+    document.getElementById('agent-enabled-input').value = String(agent.enabled !== false);
+  }
+
+  function writeAgentForm(){
+    if(!customization?.agents?.[selectedAgentKey]) return;
+    const agent = customization.agents[selectedAgentKey];
+    agent.display_name = document.getElementById('agent-name-input').value.trim() || agent.name;
+    agent.color = document.getElementById('agent-color-input').value || agent.color;
+    agent.avatar = document.getElementById('agent-avatar-input').value.trim();
+    agent.role = document.getElementById('agent-role-input').value.trim();
+    agent.tone = document.getElementById('agent-tone-input').value.trim();
+    agent.expertise = document.getElementById('agent-expertise-input').value.trim();
+    agent.behavior = document.getElementById('agent-behavior-input').value.trim();
+    agent.personality = document.getElementById('agent-personality-input').value.trim();
+    agent.voice = document.getElementById('agent-voice-input').value.trim();
+    agent.enabled = document.getElementById('agent-enabled-input').value === 'true';
+  }
+
+  function writeRoomForm(){
+    customization.room.title = document.getElementById('room-title-input').value.trim() || 'Agent Meeting Room';
+    customization.room.logo = document.getElementById('room-logo-input').value.trim();
+    customization.room.subtitle = document.getElementById('room-subtitle-input').value.trim();
+    customization.room.free_talk_duration = Number(document.getElementById('free-talk-duration-input').value || 300);
+    customization.room.tts_enabled = document.getElementById('tts-enabled-input').value === 'true';
+  }
+
+  function renderPresetSelect(){
+    const select = document.getElementById('preset-select');
+    select.innerHTML = Object.entries(customization.presets || {}).map(([key, preset]) =>
+      `<option value="${escapeHtml(key)}">${escapeHtml(preset.name || key)}</option>`
+    ).join('');
+    select.value = customization.active_preset || 'default';
+  }
+
+  function applyPreset(){
+    const key = document.getElementById('preset-select').value;
+    const preset = customization.presets[key];
+    if(!preset) return;
+    customization.active_preset = key;
+    for(const [agentKey, agent] of Object.entries(customization.agents)){
+      agent.enabled = preset.agents.includes(agentKey);
+    }
+    renderSettings();
+    showToast('Preset applied');
+  }
+
+  function savePreset(){
+    writeAgentForm();
+    writeRoomForm();
+    const name = document.getElementById('preset-name-input').value.trim();
+    if(!name) return showToast('Name the preset first');
+    const key = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || `preset_${Date.now()}`;
+    customization.presets[key] = {
+      name,
+      description: 'Custom saved room',
+      agents: activeAgents().map(agent => agent.key)
+    };
+    customization.active_preset = key;
+    renderPresetSelect();
+    showToast('Preset saved');
+  }
+
+  function openSettings(){
+    renderSettings();
+    settingsModal.classList.add('active');
+  }
+
+  function closeSettings(){
+    settingsModal.classList.remove('active');
+  }
+
+  async function saveCustomization(){
+    writeAgentForm();
+    writeRoomForm();
+    const res = await fetch('/customization', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(customization)
+    });
+    customization = await res.json();
+    applyCustomizationToUI();
+    closeSettings();
+    showToast('Customization saved');
+  }
+
+  async function resetCustomization(){
+    const res = await fetch('/customization/reset', {method:'POST'});
+    customization = await res.json();
+    selectedAgentKey = 'mistral';
+    applyCustomizationToUI();
+    showToast('Defaults restored');
+  }
 
   function handleKey(e){
     if(e.key === 'Enter' && !e.shiftKey){
@@ -610,7 +1109,16 @@
     if(t) t.remove();
   }
 
-  function addAgentMessage(agent, message, color, round, isLive){
+  function speakAgentMessage(message, voiceHint){
+    if(!customization?.room?.tts_enabled || !('speechSynthesis' in window)) return;
+    const utterance = new SpeechSynthesisUtterance(String(message));
+    const voices = window.speechSynthesis.getVoices();
+    const chosen = voiceHint ? voices.find(v => v.name.toLowerCase().includes(voiceHint.toLowerCase())) : null;
+    if(chosen) utterance.voice = chosen;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function addAgentMessage(agent, message, color, round, isLive, avatar='', voice=''){
     const div = document.createElement('div');
     div.className = 'msg-group msg-agent';
 
@@ -625,10 +1133,13 @@
 
     const isSummary   = agent === 'Summary';
     const bubbleClass = isSummary ? 'bubble summary-bubble' : 'bubble';
+    const avatarMarkup = avatar
+      ? `<img class="avatar" src="${escapeHtml(avatar)}" alt="">`
+      : `<span class="avatar" style="background:${color}">${escapeHtml(String(agent).slice(0,2).toUpperCase())}</span>`;
 
     div.innerHTML = `
       <div class="name" style="color:${color}">
-        ${escapeHtml(agent)} ${badge}
+        <span class="agent-name-row">${avatarMarkup}${escapeHtml(agent)}</span> ${badge}
       </div>
       <div class="${bubbleClass}">
         ${formatMessage(message)}
@@ -638,6 +1149,7 @@
       </div>
     `;
     messagesEl.appendChild(div);
+    speakAgentMessage(message, voice);
     scrollBottom();
   }
 
@@ -719,10 +1231,10 @@
     }, 500);
   }
 
-  function showTalkBanner(topic){
+  function showTalkBanner(topic, durationSecs){
     talkTopicEl.textContent = `"${topic}"`;
     talkBanner.classList.add('active');
-    startTalkTimer(300);
+    startTalkTimer(durationSecs || customization?.room?.free_talk_duration || 300);
   }
 
   function hideTalkBanner(){
@@ -752,11 +1264,12 @@
   async function startTalkSession(topic){
     // POST to create the session
     let data;
+    const duration = customization?.room?.free_talk_duration || 300;
     try {
       const res = await fetch('/talk', {
         method:  'POST',
         headers: {'Content-Type':'application/json'},
-        body:    JSON.stringify({topic})
+        body:    JSON.stringify({topic, duration})
       });
       data = await res.json();
     } catch(e) {
@@ -768,7 +1281,7 @@
 
     const sessionId = data.session_id;
     currentTalkSession = sessionId;
-    showTalkBanner(topic);
+    showTalkBanner(topic, data.duration || duration);
 
     // Open SSE stream
     const es = new EventSource(`/talk_stream/${sessionId}`);
@@ -787,9 +1300,9 @@
         return;
       }
 
-      const color  = agentColors[msg.agent] || '#888';
+      const color  = msg.color || agentColors[msg.agent] || '#888';
       const isLive = !msg.is_summary;
-      addAgentMessage(msg.agent, msg.message, color, msg.round || 1, isLive);
+      addAgentMessage(msg.agent, msg.message, color, msg.round || 1, isLive, msg.avatar || '', msg.voice || '');
     };
 
     es.onerror = () => {
@@ -838,8 +1351,8 @@
       removeTyping();
 
       for(const r of data.responses){
-        const color = agentColors[r.agent] || '#888';
-        addAgentMessage(r.agent, r.message, color, r.round || 1, false);
+        const color = r.color || agentColors[r.agent] || '#888';
+        addAgentMessage(r.agent, r.message, color, r.round || 1, false, r.avatar || '', r.voice || '');
         await new Promise(resolve => setTimeout(resolve, 300));
       }
 
@@ -852,6 +1365,11 @@
     inputEl.disabled = false;
     inputEl.focus();
   }
+
+  loadCustomization().catch(() => {
+    showToast('Could not load customization');
+    renderAgentChips();
+  });
 </script>
 </body>
 </html>
