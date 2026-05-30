@@ -40,6 +40,14 @@ DEFAULT_PRESETS = {
 }
 
 
+def clamp_free_talk_duration(value, default=300):
+    """Clamp Free Talk duration to the supported 1-30 minute range."""
+    try:
+        return max(60, min(1800, int(value)))
+    except (TypeError, ValueError):
+        return default
+
+
 def default_agent_profile(key, agent):
     return {
         "key": key,
@@ -88,13 +96,9 @@ def normalize_config(raw):
     room = raw.get("room")
     if isinstance(room, dict):
         config["room"].update({k: v for k, v in room.items() if k in config["room"]})
-    try:
-        config["room"]["free_talk_duration"] = max(
-            60,
-            min(1800, int(config["room"].get("free_talk_duration", 300))),
-        )
-    except (TypeError, ValueError):
-        config["room"]["free_talk_duration"] = 300
+    config["room"]["free_talk_duration"] = clamp_free_talk_duration(
+        config["room"].get("free_talk_duration", 300)
+    )
     config["room"]["tts_enabled"] = bool(config["room"].get("tts_enabled", False))
 
     saved_agents = raw.get("agents", {})
@@ -104,7 +108,17 @@ def normalize_config(raw):
 
     presets = raw.get("presets")
     if isinstance(presets, dict):
-        config["presets"].update(presets)
+        for key, preset in presets.items():
+            if not isinstance(preset, dict):
+                continue
+            agents = preset.get("agents", [])
+            if not isinstance(agents, list):
+                agents = []
+            config["presets"][key] = {
+                "name": str(preset.get("name") or key),
+                "description": str(preset.get("description") or ""),
+                "agents": [agent for agent in agents if agent in AGENTS],
+            }
 
     active_preset = raw.get("active_preset")
     if isinstance(active_preset, str) and active_preset in config["presets"]:
