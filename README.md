@@ -216,6 +216,19 @@ The startup log tells you exactly what's working:
 
 ---
 
+## Testing
+
+Run the built-in test suite with Python's standard `unittest` runner:
+
+```bash
+python -m unittest discover -s tests
+# Windows: double-click test.bat
+```
+
+The tests cover customization persistence, Flask route validation, Free Talk duration clamping, and memory note filename handling.
+
+---
+
 ## Usage
 
 | What you type | What happens |
