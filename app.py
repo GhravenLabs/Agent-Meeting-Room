@@ -118,7 +118,7 @@ def get_customization():
 
 @app.route("/customization", methods=["POST"])
 def update_customization():
-    data = request.json or {}
+    data = request.get_json(silent=True) or {}
     return jsonify(save_config(data))
 
 
@@ -131,7 +131,7 @@ def reset_customization():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data     = request.json
+    data     = request.get_json(silent=True) or {}
     user_msg = data.get("message", "").strip()
     if not user_msg:
         return jsonify({"error": "empty message"}), 400
@@ -150,7 +150,7 @@ def chat():
 
 @app.route("/save_memory", methods=["POST"])
 def save_memory():
-    data    = request.json
+    data    = request.get_json(silent=True) or {}
     content = data.get("content", "")
     title   = data.get("title", "Meeting note")
     result  = save_to_obsidian(title, content)
@@ -165,7 +165,7 @@ def clear():
 
 @app.route("/talk", methods=["POST"])
 def start_talk():
-    data  = request.json
+    data  = request.get_json(silent=True) or {}
     topic = data.get("topic", "").strip()
     if not topic:
         return jsonify({"error": "no topic"}), 400
