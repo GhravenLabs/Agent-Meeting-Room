@@ -151,8 +151,10 @@ def chat():
 @app.route("/save_memory", methods=["POST"])
 def save_memory():
     data    = request.get_json(silent=True) or {}
-    content = data.get("content", "")
-    title   = data.get("title", "Meeting note")
+    content = data.get("content", "").strip()
+    title   = data.get("title", "Meeting note").strip() or "Meeting note"
+    if not content:
+        return jsonify({"error": "empty content"}), 400
     result  = save_to_obsidian(title, content)
     return jsonify({"saved": result, "backend": get_memory_status()["backend"]})
 
