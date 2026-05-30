@@ -40,45 +40,54 @@ def check_ollama_models() -> list:
     return []
 
 
+def _safe_print(message=""):
+    """Print startup text even when Windows stdout uses a narrow encoding."""
+    try:
+        print(message)
+    except UnicodeEncodeError:
+        encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+        print(str(message).encode(encoding, errors="replace").decode(encoding))
+
+
 def print_startup_banner(ollama_ok: bool, models: list, memory: dict):
     sep = "=" * 50
-    print(sep)
-    print("  Agent Meeting Room")
-    print(sep)
+    _safe_print(sep)
+    _safe_print("  Agent Meeting Room")
+    _safe_print(sep)
 
     # Ollama
     if ollama_ok:
-        print(f"  ✓ Ollama running  ({len(models)} model(s) available)")
+        _safe_print(f"  ✓ Ollama running  ({len(models)} model(s) available)")
         if models:
             for m in models[:6]:
-                print(f"      · {m}")
+                _safe_print(f"      · {m}")
             if len(models) > 6:
-                print(f"      ... and {len(models)-6} more")
+                _safe_print(f"      ... and {len(models)-6} more")
     else:
-        print("  ✗ Ollama NOT found — local agents will not respond")
-        print("    → Install: https://ollama.com")
-        print("    → Then run: ollama pull mistral")
+        _safe_print("  ✗ Ollama NOT found — local agents will not respond")
+        _safe_print("    → Install: https://ollama.com")
+        _safe_print("    → Then run: ollama pull mistral")
 
     # Memory
     mem_backend = memory["backend"]
     if mem_backend == "obsidian":
-        print(f"  ✓ Memory: Obsidian vault  ({memory['path']})")
+        _safe_print(f"  ✓ Memory: Obsidian vault  ({memory['path']})")
     elif mem_backend == "local":
-        print(f"  ✓ Memory: local folder  ({memory['path']})")
+        _safe_print(f"  ✓ Memory: local folder  ({memory['path']})")
     else:
-        print("  · Memory: disabled  (set MEMORY_BACKEND=local to enable)")
+        _safe_print("  · Memory: disabled  (set MEMORY_BACKEND=local to enable)")
 
     # Claude
     api_key = os.getenv("ANTHROPIC_API_KEY", "")
     if api_key and not api_key.startswith("your_"):
-        print("  ✓ Claude API key found  (@claude available)")
+        _safe_print("  ✓ Claude API key found  (@claude available)")
     else:
-        print("  · Claude API: no key set  (@claude will not respond)")
-        print("    → Add ANTHROPIC_API_KEY to .env for @claude")
+        _safe_print("  · Claude API: no key set  (@claude will not respond)")
+        _safe_print("    → Add ANTHROPIC_API_KEY to .env for @claude")
 
-    print(sep)
-    print("  Open: http://localhost:5000")
-    print(sep)
+    _safe_print(sep)
+    _safe_print("  Open: http://localhost:5000")
+    _safe_print(sep)
 
 
 # ── Routes ───────────────────────────────────────────────────
