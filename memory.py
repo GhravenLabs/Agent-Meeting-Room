@@ -58,6 +58,7 @@ def safe_note_title(title: str) -> str:
     """Return a filesystem-safe note title stem."""
     cleaned = INVALID_FILENAME_CHARS.sub("-", title.strip())
     cleaned = re.sub(r"\s+", "_", cleaned)
+    cleaned = re.sub(r"[-_]{2,}", "_", cleaned)
     cleaned = cleaned.strip("._-")
     return (cleaned or "Meeting_note")[:50]
 
