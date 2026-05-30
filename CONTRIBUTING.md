@@ -40,6 +40,8 @@ Then mention it in chat as `@mynewagent`. That's it.
 - Python 3.11+, no external frameworks beyond Flask + requests
 - Keep `agents.py` logic-only (no Flask routes)
 - Keep `app.py` routes-only (no agent logic)
+- Use `python -m unittest discover -s tests` before opening a PR
+- On Windows, `test.bat` runs the same test suite
 
 ## Pull requests
 
