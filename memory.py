@@ -10,6 +10,7 @@ To add a custom backend: implement save(title, content) -> bool
 and read(max_chars) -> str, then register it in BACKENDS below.
 """
 import os
+import re
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -28,6 +29,7 @@ LOCAL_MEMORY_DIR = os.getenv(
 )
 
 MEMORY_FILE = "meeting_memory.md"
+INVALID_FILENAME_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 
 def _resolve_backend() -> str:
@@ -52,6 +54,14 @@ def _get_memory_dir() -> str:
     return LOCAL_MEMORY_DIR
 
 
+def safe_note_title(title: str) -> str:
+    """Return a filesystem-safe note title stem."""
+    cleaned = INVALID_FILENAME_CHARS.sub("-", title.strip())
+    cleaned = re.sub(r"\s+", "_", cleaned)
+    cleaned = cleaned.strip("._-")
+    return (cleaned or "Meeting_note")[:50]
+
+
 def save_to_obsidian(title: str, content: str) -> bool:
     """
     Save a note. Works with any backend.
@@ -64,7 +74,7 @@ def save_to_obsidian(title: str, content: str) -> bool:
     try:
         os.makedirs(memory_dir, exist_ok=True)
         timestamp  = datetime.now().strftime("%Y-%m-%d %H:%M")
-        safe_title = title.replace(" ", "_").replace("/", "-")[:50]
+        safe_title = safe_note_title(title)
         filename   = f"{datetime.now().strftime('%Y%m%d_%H%M')}_{safe_title}.md"
         filepath   = os.path.join(memory_dir, filename)
 
