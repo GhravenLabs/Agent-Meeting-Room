@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from agents import run_agents, run_free_talk_thread
 from memory import save_to_obsidian, get_recent_memory, get_memory_status
-from customization import load_config, save_config, get_room_config
+from customization import load_config, save_config, get_room_config, clamp_free_talk_duration
 import os
 import sys
 import json
@@ -183,11 +183,9 @@ def start_talk():
     session_id = uuid.uuid4().hex[:10]
     q          = queue.Queue()
     stop_event = threading.Event()
-    try:
-        duration = int(data.get("duration") or get_room_config().get("free_talk_duration", 300))
-    except (TypeError, ValueError):
-        duration = 300
-    duration = max(60, min(1800, duration))
+    duration = clamp_free_talk_duration(
+        data.get("duration") or get_room_config().get("free_talk_duration", 300)
+    )
 
     if len(talk_sessions) > 100:
         oldest = next(iter(talk_sessions))
