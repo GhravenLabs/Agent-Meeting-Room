@@ -91,6 +91,25 @@ unless asked for detail. You are in a group meeting with other AI agents."""
 
 ---
 
+## Customization roadmap
+
+Agent Meeting Room is meant to feel like your own digital table, not a fixed demo. These options are planned as **optional** customization layers so the default setup stays simple:
+
+| Customization | Planned behavior |
+|---|---|
+| Agent display names | Rename agents in the UI without changing the `@mention` key |
+| Agent avatars | Choose an uploaded image, image URL, logo, or generated initials fallback |
+| Agent accent colors | Pick each agent's chip, name, and message highlight color |
+| Persona cards | Edit role, tone, expertise, and meeting behavior from a simple form |
+| Saved presets | Save and load teams such as Product Review, Code Review, Debate Panel, or Creative Room |
+| Room identity | Set an optional room title, purpose, and logo for demos or recurring meetings |
+| Free Talk duration | Choose short or long discussions, from quick 5-minute syncs to longer 30-minute sessions |
+| TTS voices | Future voice profiles so each agent can speak with a distinct optional voice |
+
+The first milestone should be lightweight: display name, avatar/color, and persona card. Presets, longer meetings, and TTS can build on top of that once the profile model is stable.
+
+---
+
 ## Download & install
 
 ### Option A — Portable EXE (simplest)
