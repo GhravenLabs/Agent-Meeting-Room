@@ -19,6 +19,14 @@ talk_sessions    = {}   # session_id -> queue.Queue
 talk_stop_events = {}   # session_id -> threading.Event
 
 
+def get_port() -> int:
+    """Return the configured HTTP port with a safe default."""
+    try:
+        return int(os.getenv("PORT", "5000"))
+    except ValueError:
+        return 5000
+
+
 # ── Startup checks ────────────────────────────────────────────
 def check_ollama() -> bool:
     """Return True if Ollama is reachable on localhost:11434."""
@@ -86,7 +94,7 @@ def print_startup_banner(ollama_ok: bool, models: list, memory: dict):
         _safe_print("    → Add ANTHROPIC_API_KEY to .env for @claude")
 
     _safe_print(sep)
-    _safe_print("  Open: http://localhost:5000")
+    _safe_print(f"  Open: http://localhost:{get_port()}")
     _safe_print(sep)
 
 
@@ -239,4 +247,4 @@ if __name__ == "__main__":
     models    = check_ollama_models() if ollama_ok else []
     memory    = get_memory_status()
     print_startup_banner(ollama_ok, models, memory)
-    app.run(debug=False, port=5000)
+    app.run(debug=False, port=get_port())
