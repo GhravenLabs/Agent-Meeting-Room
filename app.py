@@ -22,9 +22,12 @@ talk_stop_events = {}   # session_id -> threading.Event
 def get_port() -> int:
     """Return the configured HTTP port with a safe default."""
     try:
-        return int(os.getenv("PORT", "5000"))
+        port = int(os.getenv("PORT", "5000"))
     except ValueError:
         return 5000
+    if 1 <= port <= 65535:
+        return port
+    return 5000
 
 
 # ── Startup checks ────────────────────────────────────────────

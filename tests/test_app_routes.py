@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 import app as app_module
 
@@ -13,6 +14,12 @@ class AppRouteTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json["error"], "empty message")
+
+    def test_get_port_rejects_invalid_values(self):
+        with patch.dict(app_module.os.environ, {"PORT": "70000"}):
+            self.assertEqual(app_module.get_port(), 5000)
+        with patch.dict(app_module.os.environ, {"PORT": "not-a-port"}):
+            self.assertEqual(app_module.get_port(), 5000)
 
     def test_chat_uses_agent_runner(self):
         original = app_module.run_agents
