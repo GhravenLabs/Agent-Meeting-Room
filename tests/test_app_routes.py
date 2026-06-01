@@ -21,6 +21,16 @@ class AppRouteTests(unittest.TestCase):
         with patch.dict(app_module.os.environ, {"PORT": "not-a-port"}):
             self.assertEqual(app_module.get_port(), 5000)
 
+    def test_check_ollama_models_skips_malformed_entries(self):
+        class FakeResponse:
+            status_code = 200
+
+            def json(self):
+                return {"models": [{"name": "mistral"}, {}, "bad", {"name": ""}]}
+
+        with patch.object(app_module.http_requests, "get", return_value=FakeResponse()):
+            self.assertEqual(app_module.check_ollama_models(), ["mistral"])
+
     def test_chat_uses_agent_runner(self):
         original = app_module.run_agents
         app_module.run_agents = lambda message, history, memory: [{

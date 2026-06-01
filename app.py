@@ -45,7 +45,11 @@ def check_ollama_models() -> list:
     try:
         r = http_requests.get("http://localhost:11434/api/tags", timeout=5)
         if r.status_code == 200:
-            return [m["name"] for m in r.json().get("models", [])]
+            return [
+                model["name"]
+                for model in r.json().get("models", [])
+                if isinstance(model, dict) and model.get("name")
+            ]
     except Exception:
         pass
     return []
