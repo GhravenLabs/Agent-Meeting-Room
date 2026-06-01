@@ -78,6 +78,26 @@ class AppRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["duration"], 1800)
 
+    def test_talk_sessions_are_pruned_before_new_session(self):
+        original_sessions = dict(app_module.talk_sessions)
+        original_events = dict(app_module.talk_stop_events)
+        app_module.talk_sessions.clear()
+        app_module.talk_stop_events.clear()
+        for index in range(app_module.MAX_TALK_SESSIONS):
+            session_id = f"old-{index}"
+            app_module.talk_sessions[session_id] = object()
+            app_module.talk_stop_events[session_id] = object()
+        try:
+            app_module.prune_talk_sessions()
+
+            self.assertEqual(len(app_module.talk_sessions), app_module.MAX_TALK_SESSIONS - 1)
+            self.assertNotIn("old-0", app_module.talk_sessions)
+        finally:
+            app_module.talk_sessions.clear()
+            app_module.talk_sessions.update(original_sessions)
+            app_module.talk_stop_events.clear()
+            app_module.talk_stop_events.update(original_events)
+
 
 if __name__ == "__main__":
     unittest.main()

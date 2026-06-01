@@ -16,6 +16,7 @@ load_dotenv()
 app = Flask(__name__)
 conversation_history = []
 MAX_CONVERSATION_HISTORY = 50
+MAX_TALK_SESSIONS = 100
 talk_sessions    = {}   # session_id -> queue.Queue
 talk_stop_events = {}   # session_id -> threading.Event
 
@@ -25,6 +26,14 @@ def trim_conversation_history() -> None:
     overflow = len(conversation_history) - MAX_CONVERSATION_HISTORY
     if overflow > 0:
         del conversation_history[:overflow]
+
+
+def prune_talk_sessions() -> None:
+    """Keep room for one more Free Talk session."""
+    while len(talk_sessions) >= MAX_TALK_SESSIONS:
+        oldest = next(iter(talk_sessions))
+        talk_sessions.pop(oldest, None)
+        talk_stop_events.pop(oldest, None)
 
 
 def get_port() -> int:
@@ -201,10 +210,7 @@ def start_talk():
         data.get("duration") or get_room_config().get("free_talk_duration", 300)
     )
 
-    if len(talk_sessions) > 100:
-        oldest = next(iter(talk_sessions))
-        talk_sessions.pop(oldest, None)
-        talk_stop_events.pop(oldest, None)
+    prune_talk_sessions()
 
     talk_sessions[session_id]    = q
     talk_stop_events[session_id] = stop_event
