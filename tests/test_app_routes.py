@@ -45,6 +45,22 @@ class AppRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["responses"][0]["message"], "Echo: @all hello")
 
+    def test_chat_history_trims_bulk_responses_to_limit(self):
+        original = app_module.run_agents
+        app_module.conversation_history.extend(
+            {"role": "agent", "content": str(index)} for index in range(49)
+        )
+        app_module.run_agents = lambda message, history, memory: [
+            {"agent": f"Agent{index}", "message": "ok"} for index in range(5)
+        ]
+        try:
+            response = self.client.post("/chat", json={"message": "@all hello"})
+        finally:
+            app_module.run_agents = original
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(app_module.conversation_history), app_module.MAX_CONVERSATION_HISTORY)
+
     def test_talk_rejects_missing_topic(self):
         response = self.client.post("/talk", json={})
 

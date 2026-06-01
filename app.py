@@ -15,8 +15,16 @@ load_dotenv()
 
 app = Flask(__name__)
 conversation_history = []
+MAX_CONVERSATION_HISTORY = 50
 talk_sessions    = {}   # session_id -> queue.Queue
 talk_stop_events = {}   # session_id -> threading.Event
+
+
+def trim_conversation_history() -> None:
+    """Keep only the most recent conversation entries."""
+    overflow = len(conversation_history) - MAX_CONVERSATION_HISTORY
+    if overflow > 0:
+        del conversation_history[:overflow]
 
 
 def get_port() -> int:
@@ -157,8 +165,7 @@ def chat():
 
     for r in responses:
         conversation_history.append({"role": r["agent"], "content": r["message"]})
-    if len(conversation_history) > 50:
-        conversation_history.pop(0)
+    trim_conversation_history()
 
     return jsonify({"responses": responses})
 
