@@ -23,13 +23,13 @@ A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents
 
 ## Agent routing logic (agents.py `run_agents`)
 1. `@debate` → `run_debate()`
-2. `@claude` → `ask_claude()` only
+2. Claude agent command → `ask_claude()` only
 3. `@<name>` → specific agent(s)
 4. `@all` or no mention → all 4 local agents
 
 ## Environment variables
 - `ANTHROPIC_API_KEY` — required for Claude
-- `ANTHROPIC_API_KEY` — required for @claude
+- `ANTHROPIC_API_KEY` — required for the Claude agent command
 - `MEMORY_BACKEND` — `auto` (default), `local`, `obsidian`, or `none`
 - `OBSIDIAN_VAULT_PATH` — only needed when MEMORY_BACKEND=obsidian
 - `LOCAL_MEMORY_PATH` — override for local backend folder (default: ./meeting_notes/)

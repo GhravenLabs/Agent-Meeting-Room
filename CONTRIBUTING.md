@@ -15,7 +15,7 @@ Thanks for your interest in contributing! This is a small project built for lear
 git clone https://github.com/GhravenLabs/Agent-Meeting-Room
 cd Agent-Meeting-Room
 pip install -r requirements.txt
-cp .env.example .env   # add your Anthropic key if testing @claude
+cp .env.example .env   # add your Anthropic key if testing the Claude agent command
 ollama pull mistral    # pull at least one model
 python app.py
 ```

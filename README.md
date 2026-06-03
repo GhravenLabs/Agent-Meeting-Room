@@ -33,7 +33,7 @@ Imagine a group chat where everyone at the table is an AI — each with a differ
 - **Debate mode** — structured 3-round argument with a final summary
 - **Free Talk** — agents stream a live discussion on any topic via SSE
 - **Memory** — save meeting notes directly to an Obsidian vault
-- **@claude** — Claude API joins as the "headmaster" on demand
+- **Claude agent command** — Claude API joins as the "headmaster" on demand
 
 ---
 
@@ -47,7 +47,7 @@ All local agents run **any Ollama-compatible model** — swap by editing the `"m
 | `@phi3` | `phi3` | ~2 GB | Creative lateral thinker |
 | `@gemma2` | `gemma2:2b` | ~1.5 GB | Balanced careful summarizer |
 | `@deepseek` | `deepseek-r1:7b` | ~4.7 GB | Deep step-by-step reasoner |
-| `@claude` | `claude-sonnet-4-5` | API | Collaborative nuanced advisor |
+| <code>&#64;claude</code> | `claude-sonnet-4-5` | API | Collaborative nuanced advisor |
 
 > **Swap a model:** open `agents.py` → change the `"model"` value to anything from `ollama list`.
 
@@ -181,7 +181,7 @@ Open `.env` and set:
 
 | Variable | Required? | What it does |
 |----------|-----------|--------------|
-| `ANTHROPIC_API_KEY` | Optional | Enables `@claude` — get one at [console.anthropic.com](https://console.anthropic.com) |
+| `ANTHROPIC_API_KEY` | Optional | Enables the Claude agent command — get one at [console.anthropic.com](https://console.anthropic.com) |
 | `MEMORY_BACKEND` | Optional | `local` (default), `obsidian`, or `none` |
 | `OBSIDIAN_VAULT_PATH` | Optional | Only if `MEMORY_BACKEND=obsidian` |
 
@@ -209,8 +209,8 @@ The startup log tells you exactly what's working:
       · gemma2:2b
       · deepseek-r1:7b
   ✓ Memory: local folder  (./meeting_notes)
-  · Claude API: no key set  (@claude will not respond)
-    → Add ANTHROPIC_API_KEY to .env for @claude
+  · Claude API: no key set  (Claude agent will not respond)
+    → Add ANTHROPIC_API_KEY to .env for the Claude agent
 ==================================================
   Open: http://localhost:5000
 ==================================================
@@ -238,7 +238,7 @@ The tests cover customization persistence, Flask route validation, Free Talk dur
 | `@mistral explain quantum computing` | Only Mistral replies |
 | `@phi3 @gemma2 brainstorm ideas` | Phi3 and Gemma2 reply |
 | `@all what should I build next?` | All local agents reply |
-| `@claude review this plan` | Claude API responds |
+| <code>&#64;claude review this plan</code> | Claude API responds |
 | `@debate is AI good or bad?` | 3-round structured debate |
 | *(no mention)* | All local agents reply |
 
@@ -268,7 +268,7 @@ agent-meeting-room/
 |-------------|-----------|-------|
 | Python 3.11+ | ✅ Required | [python.org](https://python.org) |
 | [Ollama](https://ollama.com) | ✅ Required | For local agents — must be running |
-| Anthropic API key | Optional | Only for `@claude` |
+| Anthropic API key | Optional | Only for the Claude agent command |
 | [Obsidian](https://obsidian.md) | Optional | Only if you want Obsidian memory — not needed |
 
 ---

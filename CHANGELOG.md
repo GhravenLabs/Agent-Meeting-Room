@@ -116,7 +116,7 @@ All notable changes to Agent Meeting Room are documented here.
 ## [1.1.0] — 2025-04-01
 
 ### Added
-- `@claude` integration — Claude Sonnet joins as the headmaster agent via Anthropic API
+- Claude agent command integration — Claude Sonnet joins as the headmaster agent via Anthropic API
 - Free Talk mode — agents hold a live streaming discussion on any topic (SSE)
 - Obsidian memory integration — save meeting notes directly to a vault
 - Debate mode — 3-round structured argument with Gemma2 summary
