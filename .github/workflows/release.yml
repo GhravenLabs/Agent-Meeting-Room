@@ -68,7 +68,7 @@ jobs:
             2. Pull at least one model: `ollama pull mistral`
             3. Double-click `AgentMeetingRoom.exe` - browser opens at `http://localhost:5000`
 
-            > **@claude** needs an Anthropic API key. Create `.env` next to the exe:
+            > The Claude agent needs an Anthropic API key. Create `.env` next to the exe:
             > `ANTHROPIC_API_KEY=sk-ant-...`
 
             ### Add unlimited agents
