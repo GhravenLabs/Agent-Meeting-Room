@@ -117,10 +117,12 @@ Customizations are stored locally in `agent_profiles.json`, which is ignored by 
 2. Download `AgentMeetingRoom.exe`
 3. Double-click — browser opens automatically
 
-### Option B — Full installer
-1. Download `AgentMeetingRoom-Setup.exe` from [Releases](https://github.com/GhravenLabs/Agent-Meeting-Room/releases/latest)
-2. Run the installer — creates desktop shortcut + Start Menu entry
-3. Launch from your desktop
+### Option B — Build the Windows installer
+The repo includes `AgentMeetingRoom_Setup.iss` for Inno Setup if you want a full installer with desktop and Start Menu shortcuts.
+
+1. Run `build.bat` to create `dist/AgentMeetingRoom.exe`
+2. Open `AgentMeetingRoom_Setup.iss` with [Inno Setup 6](https://jrsoftware.org/isinfo.php)
+3. Build the setup package — output is written to `dist/`
 
 > **Prerequisite for both:** [Ollama](https://ollama.com) must be installed and at least one model pulled.
 > ```bash

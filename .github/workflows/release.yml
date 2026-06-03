@@ -1,5 +1,5 @@
 # Agent Meeting Room - Release Workflow
-# Push a version tag to trigger: git tag v1.7.0 && git push origin v1.7.0
+# Push a version tag to trigger: git tag v1.8.0 && git push origin v1.8.0
 
 name: Build & Release
 
@@ -7,6 +7,9 @@ on:
   push:
     tags:
       - 'v*.*.*'
+
+permissions:
+  contents: write
 
 jobs:
   build-windows:

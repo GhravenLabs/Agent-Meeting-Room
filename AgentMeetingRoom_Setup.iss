@@ -3,7 +3,7 @@
 ; Run: iscc AgentMeetingRoom_Setup.iss
 
 #define AppName      "Agent Meeting Room"
-#define AppVersion   "1.5.0"
+#define AppVersion   "1.8.0"
 #define AppPublisher "Ghraven"
 #define AppURL       "https://github.com/GhravenLabs/Agent-Meeting-Room"
 #define AppExeName   "AgentMeetingRoom.exe"

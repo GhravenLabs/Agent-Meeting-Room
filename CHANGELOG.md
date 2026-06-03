@@ -4,15 +4,36 @@ All notable changes to Agent Meeting Room are documented here.
 
 ## [Unreleased]
 
-### Added
-- Customize room identity, agent names, avatar/logo URLs, accent colors, persona cards, enabled agents, and saved presets from the UI.
-- Configure Free Talk duration for 5, 10, 15, or 30 minute sessions.
-- Optional browser TTS playback with per-agent voice name hints.
-
 ### Planned
 - Export meeting transcript as Markdown
 - Configurable agent response length via UI slider
 - Dark/light theme toggle
+
+---
+
+## [1.8.0] - 2026-06-03
+
+### Added
+- Customize room identity, agent names, avatar/logo URLs, accent colors, persona cards, enabled agents, and saved presets from the UI.
+- Configure Free Talk duration for 5, 10, 15, or 30 minute sessions.
+- Optional browser TTS playback with per-agent voice name hints.
+- `.env.example`, `test.bat`, and contributor testing notes for easier local setup.
+- Focused tests for customization persistence, Flask route validation, memory filename handling, and core app routes.
+
+### Changed
+- Honored the configured `PORT` environment variable when starting the app.
+- Shared Free Talk duration clamping across routes and tests.
+- Updated repository links to the `GhravenLabs` organization.
+
+### Fixed
+- Rejected malformed or missing JSON request bodies instead of raising route errors.
+- Made the startup banner encoding safer on Windows terminals.
+- Normalized customization presets before saving/loading them.
+- Prevented empty memory notes and sanitized memory note filenames.
+- Ignored malformed Ollama model entries during startup/status checks.
+- Validated configured port ranges.
+- Capped conversation history after bulk replies.
+- Pruned Free Talk sessions before session storage overflow.
 
 ---
 
