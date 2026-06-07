@@ -4,6 +4,9 @@ All notable changes to Agent Meeting Room are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Claude API responses now check HTTP status before parsing JSON, making API failures easier to diagnose.
+
 ### Planned
 - Export meeting transcript as Markdown
 - Configurable agent response length via UI slider

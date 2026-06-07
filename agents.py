@@ -134,6 +134,7 @@ asked for detail."""
             },
             timeout=30
         )
+        response.raise_for_status()
         return response.json()["content"][0]["text"].strip()
     except Exception as e:
         return f"[Claude error: {e}]"
