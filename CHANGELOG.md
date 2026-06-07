@@ -8,6 +8,7 @@ All notable changes to Agent Meeting Room are documented here.
 - Optional Codex/OpenAI and Gemini/Google cloud agents with `@codex`, `@gemini`, and `@google` mention routing.
 
 ### Fixed
+- Packaged launcher now validates `PORT`, waits for Flask to respond, and only then opens the browser.
 - Claude API responses now check HTTP status before parsing JSON, making API failures easier to diagnose.
 
 ### Planned
