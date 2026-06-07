@@ -1,18 +1,18 @@
 # Agent Meeting Room — Project Context
 
 ## What this project is
-A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents to summon them into a conversation. Agents are powered by local Ollama models or the Claude API.
+A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents to summon them into a conversation. Agents are powered by local Ollama models or optional cloud APIs.
 
 ## Stack
 - Python 3.11, Flask
 - Local agents via Ollama: Mistral, Phi3, Gemma2:2b, DeepSeek-r1:7b (unlimited — add any Ollama model in agents.py AGENTS dict)
-- Cloud agent: Anthropic Claude API (`claude-sonnet-4-5`)
+- Cloud agents: Anthropic Claude (`@claude`), OpenAI/Codex (`@codex`), Google Gemini (`@gemini` / `@google`)
 - Frontend: Vanilla JS with Server-Sent Events for streaming
 - Memory: Obsidian Markdown vault
 
 ## Key files
 - `app.py` — Flask routes, SSE streaming (`/talk_stream/<id>`), session management
-- `agents.py` — Agent definitions, `ask_ollama()`, `ask_claude()`, `run_debate()`, `run_free_talk_thread()`
+- `agents.py` — Agent definitions, `ask_ollama()`, cloud API helpers, `run_debate()`, `run_free_talk_thread()`
 - `memory.py` — Obsidian vault read/write, rolling memory file
 - `templates/index.html` — Complete single-page UI
 
@@ -23,13 +23,14 @@ A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents
 
 ## Agent routing logic (agents.py `run_agents`)
 1. `@debate` → `run_debate()`
-2. Claude agent command → `ask_claude()` only
+2. Cloud agent commands route to `ask_claude()`, `ask_codex()`, or `ask_gemini()`
 3. `@<name>` → specific agent(s)
 4. `@all` or no mention → all 4 local agents
 
 ## Environment variables
-- `ANTHROPIC_API_KEY` — required for Claude
-- `ANTHROPIC_API_KEY` — required for the Claude agent command
+- `ANTHROPIC_API_KEY` — required for `@claude`
+- `OPENAI_API_KEY` / `OPENAI_MODEL` — optional settings for `@codex`
+- `GEMINI_API_KEY` or `GOOGLE_API_KEY` / `GEMINI_MODEL` — optional settings for `@gemini` and `@google`
 - `MEMORY_BACKEND` — `auto` (default), `local`, `obsidian`, or `none`
 - `OBSIDIAN_VAULT_PATH` — only needed when MEMORY_BACKEND=obsidian
 - `LOCAL_MEMORY_PATH` — override for local backend folder (default: ./meeting_notes/)
@@ -37,8 +38,8 @@ A Flask multi-agent AI chat app running at localhost:5000. Users @mention agents
 - `PORT` — server port (default: 5000)
 
 ## Startup behaviour
-- `print_startup_banner()` in app.py runs on start — checks Ollama, lists models, shows memory backend, checks Claude key
-- `/status` endpoint returns JSON with live Ollama/memory/Claude state (used for health checks)
+- `print_startup_banner()` in app.py runs on start — checks Ollama, lists models, shows memory backend, checks cloud agent keys
+- `/status` endpoint returns JSON with live Ollama/memory/cloud-agent state (used for health checks)
 - If Ollama is not running, agents return `[model unavailable — is Ollama running?]` (not a crash)
 - If memory backend is `none`, save_to_obsidian() is a no-op (returns False silently)
 

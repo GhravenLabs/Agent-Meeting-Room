@@ -31,6 +31,20 @@ class AppRouteTests(unittest.TestCase):
         with patch.object(app_module.http_requests, "get", return_value=FakeResponse()):
             self.assertEqual(app_module.check_ollama_models(), ["mistral"])
 
+    def test_status_reports_cloud_agent_configuration(self):
+        with (
+            patch.dict(app_module.os.environ, {"OPENAI_API_KEY": "test-key"}, clear=True),
+            patch.object(app_module, "check_ollama", return_value=False),
+        ):
+            response = self.client.get("/status")
+
+        self.assertEqual(response.status_code, 200)
+        cloud_agents = response.json["cloud_agents"]
+        self.assertFalse(cloud_agents["claude"]["configured"])
+        self.assertTrue(cloud_agents["codex"]["configured"])
+        self.assertFalse(cloud_agents["gemini"]["configured"])
+        self.assertEqual(response.json["claude"]["configured"], cloud_agents["claude"]["configured"])
+
     def test_chat_uses_agent_runner(self):
         original = app_module.run_agents
         app_module.run_agents = lambda message, history, memory: [{

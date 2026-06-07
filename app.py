@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
-from agents import run_agents, run_free_talk_thread
+from agents import CLOUD_AGENTS, run_agents, run_free_talk_thread
 from memory import save_to_obsidian, get_recent_memory, get_memory_status
 from customization import load_config, save_config, get_room_config, clamp_free_talk_duration
 import os
@@ -45,6 +45,28 @@ def get_port() -> int:
     if 1 <= port <= 65535:
         return port
     return 5000
+
+
+def cloud_agent_status() -> dict:
+    """Return configured/unconfigured state for optional cloud agents."""
+    key_envs = {
+        "claude": ["ANTHROPIC_API_KEY"],
+        "codex": ["OPENAI_API_KEY"],
+        "gemini": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+    }
+    status = {}
+    for key, agent in CLOUD_AGENTS.items():
+        env_names = key_envs.get(key, [])
+        configured = any(
+            os.getenv(env_name, "") and not os.getenv(env_name, "").startswith("your_")
+            for env_name in env_names
+        )
+        status[key] = {
+            "name": agent["name"],
+            "mention": agent["mention"],
+            "configured": configured,
+        }
+    return status
 
 
 # ── Startup checks ────────────────────────────────────────────
@@ -109,13 +131,18 @@ def print_startup_banner(ollama_ok: bool, models: list, memory: dict):
     else:
         _safe_print("  · Memory: disabled  (set MEMORY_BACKEND=local to enable)")
 
-    # Claude
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if api_key and not api_key.startswith("your_"):
-        _safe_print("  ✓ Claude API key found  (@claude available)")
-    else:
-        _safe_print("  · Claude API: no key set  (@claude will not respond)")
-        _safe_print("    → Add ANTHROPIC_API_KEY to .env for @claude")
+    # Cloud agents
+    for key, cloud in cloud_agent_status().items():
+        if cloud["configured"]:
+            _safe_print(f"  OK {cloud['name']} key found  ({cloud['mention']} available)")
+        else:
+            _safe_print(f"  .. {cloud['name']} API: no key set  ({cloud['mention']} will not respond)")
+            if key == "claude":
+                _safe_print("     Add ANTHROPIC_API_KEY to .env for @claude")
+            elif key == "codex":
+                _safe_print("     Add OPENAI_API_KEY to .env for @codex")
+            elif key == "gemini":
+                _safe_print("     Add GEMINI_API_KEY or GOOGLE_API_KEY to .env for @gemini")
 
     _safe_print(sep)
     _safe_print(f"  Open: http://localhost:{get_port()}")
@@ -134,11 +161,12 @@ def status():
     ollama_ok = check_ollama()
     models    = check_ollama_models() if ollama_ok else []
     memory    = get_memory_status()
-    api_key   = os.getenv("ANTHROPIC_API_KEY", "")
+    cloud     = cloud_agent_status()
     return jsonify({
         "ollama":  {"running": ollama_ok, "models": models},
         "memory":  memory,
-        "claude":  {"configured": bool(api_key and not api_key.startswith("your_"))},
+        "cloud_agents": cloud,
+        "claude":  {"configured": cloud["claude"]["configured"]},
         "customization": load_config(),
     })
 

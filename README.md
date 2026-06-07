@@ -6,14 +6,14 @@
 
 <p align="center">
   A Flask web app where you <code>@mention</code> AI agents into a live group chat.<br/>
-  Local models via Ollama · Claude API on demand · Streaming debates · Obsidian memory · Add unlimited agents
+  Local models via Ollama · cloud AI on demand · Streaming debates · Obsidian memory · Add unlimited agents
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-blue?style=flat-square&logo=python" />
   <img src="https://img.shields.io/badge/Flask-2.x-black?style=flat-square&logo=flask" />
   <img src="https://img.shields.io/badge/Ollama-local-orange?style=flat-square" />
-  <img src="https://img.shields.io/badge/Claude%20API-optional-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/Cloud%20AI-optional-purple?style=flat-square" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
 </p>
 
@@ -27,13 +27,13 @@
 
 ## What it does
 
-Imagine a group chat where everyone at the table is an AI — each with a different personality, model, and reasoning style. You type a message, mention the agents you want, and they all respond. You can spark a structured debate, run a free-form group discussion via live streaming, or pull in Claude as the senior voice in the room.
+Imagine a group chat where everyone at the table is an AI — each with a different personality, model, and reasoning style. You type a message, mention the agents you want, and they all respond. You can spark a structured debate, run a free-form group discussion via live streaming, or pull in Claude, Codex, or Gemini as cloud advisors.
 
 - **@mention routing** — only the agents you tag reply
 - **Debate mode** — structured 3-round argument with a final summary
 - **Free Talk** — agents stream a live discussion on any topic via SSE
 - **Memory** — save meeting notes directly to an Obsidian vault
-- **Claude agent command** — Claude API joins as the "headmaster" on demand
+- **Cloud agent commands** — Claude, Codex/OpenAI, and Gemini/Google can join on demand
 
 ---
 
@@ -48,6 +48,8 @@ All local agents run **any Ollama-compatible model** — swap by editing the `"m
 | `@gemma2` | `gemma2:2b` | ~1.5 GB | Balanced careful summarizer |
 | `@deepseek` | `deepseek-r1:7b` | ~4.7 GB | Deep step-by-step reasoner |
 | <code>&#64;claude</code> | `claude-sonnet-4-5` | API | Collaborative nuanced advisor |
+| <code>&#64;codex</code> | `OPENAI_MODEL` (`gpt-4.1-mini` default) | API | Coding and product advisor |
+| <code>&#64;gemini</code> / <code>&#64;google</code> | `GEMINI_MODEL` (`gemini-2.5-flash` default) | API | Research and planning advisor |
 
 > **Swap a model:** open `agents.py` → change the `"model"` value to anything from `ollama list`.
 
@@ -181,7 +183,11 @@ Open `.env` and set:
 
 | Variable | Required? | What it does |
 |----------|-----------|--------------|
-| `ANTHROPIC_API_KEY` | Optional | Enables the Claude agent command — get one at [console.anthropic.com](https://console.anthropic.com) |
+| `ANTHROPIC_API_KEY` | Optional | Enables `@claude` — get one at [console.anthropic.com](https://console.anthropic.com) |
+| `OPENAI_API_KEY` | Optional | Enables `@codex` |
+| `OPENAI_MODEL` | Optional | Overrides the `@codex` model, default `gpt-4.1-mini` |
+| `GEMINI_API_KEY` / `GOOGLE_API_KEY` | Optional | Enables `@gemini` and `@google` |
+| `GEMINI_MODEL` | Optional | Overrides the Gemini model, default `gemini-2.5-flash` |
 | `MEMORY_BACKEND` | Optional | `local` (default), `obsidian`, or `none` |
 | `OBSIDIAN_VAULT_PATH` | Optional | Only if `MEMORY_BACKEND=obsidian` |
 
@@ -209,8 +215,12 @@ The startup log tells you exactly what's working:
       · gemma2:2b
       · deepseek-r1:7b
   ✓ Memory: local folder  (./meeting_notes)
-  · Claude API: no key set  (Claude agent will not respond)
-    → Add ANTHROPIC_API_KEY to .env for the Claude agent
+  .. Claude API: no key set  (@claude will not respond)
+     Add ANTHROPIC_API_KEY to .env for @claude
+  .. Codex API: no key set  (@codex will not respond)
+     Add OPENAI_API_KEY to .env for @codex
+  .. Gemini API: no key set  (@gemini will not respond)
+     Add GEMINI_API_KEY or GOOGLE_API_KEY to .env for @gemini
 ==================================================
   Open: http://localhost:5000
 ==================================================
@@ -239,6 +249,8 @@ The tests cover customization persistence, Flask route validation, Free Talk dur
 | `@phi3 @gemma2 brainstorm ideas` | Phi3 and Gemma2 reply |
 | `@all what should I build next?` | All local agents reply |
 | <code>&#64;claude review this plan</code> | Claude API responds |
+| <code>&#64;codex make an implementation plan</code> | Codex/OpenAI responds |
+| <code>&#64;gemini compare these options</code> | Gemini/Google responds |
 | `@debate is AI good or bad?` | 3-round structured debate |
 | *(no mention)* | All local agents reply |
 
@@ -251,7 +263,7 @@ For **Free Talk**, click the Free Talk button → give a topic → agents discus
 ```
 agent-meeting-room/
 ├── app.py              Flask routes and SSE streaming
-├── agents.py           Agent definitions, Ollama + Claude calls, debate logic
+├── agents.py           Agent definitions, Ollama + cloud API calls, debate logic
 ├── memory.py           Obsidian vault integration
 ├── templates/
 │   └── index.html      Single-page frontend (Vanilla JS + SSE)
@@ -268,7 +280,7 @@ agent-meeting-room/
 |-------------|-----------|-------|
 | Python 3.11+ | ✅ Required | [python.org](https://python.org) |
 | [Ollama](https://ollama.com) | ✅ Required | For local agents — must be running |
-| Anthropic API key | Optional | Only for the Claude agent command |
+| Cloud API keys | Optional | Only for `@claude`, `@codex`, `@gemini`, and `@google` |
 | [Obsidian](https://obsidian.md) | Optional | Only if you want Obsidian memory — not needed |
 
 ---
@@ -277,7 +289,7 @@ agent-meeting-room/
 
 **Backend:** Python · Flask · Server-Sent Events  
 **Local AI:** Ollama (Mistral · Phi3 · Gemma2 · DeepSeek)  
-**Cloud AI:** Anthropic Claude API  
+**Cloud AI:** Anthropic Claude API · OpenAI/Codex · Google Gemini
 **Frontend:** Vanilla JS · SSE streaming  
 **Memory:** Pluggable — local folder (default) · Obsidian vault (optional) · or disabled  
 

@@ -9,7 +9,7 @@ CONFIG_PATH = Path(__file__).with_name("agent_profiles.json")
 
 DEFAULT_ROOM = {
     "title": "Agent Meeting Room",
-    "subtitle": "4 local AI agents + Claude on demand",
+    "subtitle": "4 local AI agents + cloud AI on demand",
     "logo": "",
     "purpose": "",
     "free_talk_duration": 300,

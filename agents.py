@@ -47,6 +47,30 @@ asked for detail. You are in a group meeting with other AI agents."""
 }
 
 CLAUDE_MODEL = "claude-sonnet-4-5"
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
+CLOUD_AGENTS = {
+    "claude": {
+        "name": "Claude",
+        "model": "claude",
+        "color": "#534AB7",
+        "mention": "@claude",
+    },
+    "codex": {
+        "name": "Codex",
+        "model": OPENAI_MODEL,
+        "color": "#10A37F",
+        "mention": "@codex",
+    },
+    "gemini": {
+        "name": "Gemini",
+        "model": GEMINI_MODEL,
+        "color": "#4285F4",
+        "mention": "@gemini",
+        "aliases": ["@google"],
+    },
+}
 
 
 def get_effective_agents():
@@ -138,6 +162,126 @@ asked for detail."""
         return response.json()["content"][0]["text"].strip()
     except Exception as e:
         return f"[Claude error: {e}]"
+
+
+def _extract_openai_text(payload):
+    if isinstance(payload.get("output_text"), str):
+        return payload["output_text"].strip()
+    for item in payload.get("output", []):
+        for content in item.get("content", []):
+            text = content.get("text")
+            if isinstance(text, str) and text.strip():
+                return text.strip()
+    return ""
+
+
+def ask_codex(message, context=""):
+    """Ask OpenAI/Codex-style API via the Responses endpoint."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return "OpenAI API key not set in .env file."
+
+    instructions = """You are Codex, a practical coding and product-thinking AI
+joining a meeting with other AI agents. You are direct, careful, and helpful.
+Focus on clear implementation advice and tradeoffs. Be concise unless asked
+for detail."""
+
+    full_message = ""
+    if context:
+        full_message += f"{context}\n\n"
+    full_message += f"User message: {message}"
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/responses",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": OPENAI_MODEL,
+                "instructions": instructions,
+                "input": full_message,
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        text = _extract_openai_text(response.json())
+        return text or "[Codex error: empty response]"
+    except Exception as e:
+        return f"[Codex error: {e}]"
+
+
+def _extract_gemini_text(payload):
+    parts = (
+        (payload.get("candidates") or [{}])[0]
+        .get("content", {})
+        .get("parts", [])
+    )
+    texts = [part.get("text", "") for part in parts if isinstance(part.get("text"), str)]
+    return "\n".join(text for text in texts if text).strip()
+
+
+def ask_gemini(message, context=""):
+    """Ask Google Gemini API."""
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        return "Gemini API key not set in .env file."
+
+    system = """You are Gemini, a broad research and planning AI joining a
+meeting with other AI agents. You are balanced, curious, and good at finding
+practical options. Be concise unless asked for detail."""
+
+    full_message = f"{system}\n\n"
+    if context:
+        full_message += f"{context}\n\n"
+    full_message += f"User message: {message}"
+
+    try:
+        response = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
+            headers={
+                "Content-Type": "application/json",
+                "X-Goog-Api-Key": api_key,
+            },
+            json={
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [{"text": full_message}],
+                    }
+                ],
+            },
+            timeout=30,
+        )
+        response.raise_for_status()
+        text = _extract_gemini_text(response.json())
+        return text or "[Gemini error: empty response]"
+    except Exception as e:
+        return f"[Gemini error: {e}]"
+
+
+def run_cloud_agent(agent_key, message, context=""):
+    agent = CLOUD_AGENTS[agent_key]
+    clean_msg = message
+    for mention in [agent["mention"], *agent.get("aliases", [])]:
+        clean_msg = clean_msg.replace(mention, "")
+    clean_msg = clean_msg.strip()
+
+    if agent_key == "claude":
+        reply = ask_claude(clean_msg, context)
+    elif agent_key == "codex":
+        reply = ask_codex(clean_msg, context)
+    else:
+        reply = ask_gemini(clean_msg, context)
+
+    return {
+        "agent": agent["name"],
+        "model": agent["model"],
+        "color": agent["color"],
+        "message": reply,
+        "round": 1,
+    }
 
 
 def run_debate(message, conversation_history, memory_context):
@@ -258,6 +402,9 @@ def run_agents(message, conversation_history, memory_context=""):
     @gemma2   — only Gemma2 responds
     @deepseek — only DeepSeek responds
     @claude   — only Claude API responds
+    @codex    — only Codex/OpenAI responds
+    @gemini   — only Gemini responds
+    @google   — alias for @gemini
     No mention — defaults to @all
     """
     msg_lower = message.lower()
@@ -270,18 +417,12 @@ def run_agents(message, conversation_history, memory_context=""):
         clean_msg = message.replace("@debate", "").strip()
         return run_debate(clean_msg, conversation_history, memory_context)
 
-    # Claude only
-    if "@claude" in msg_lower:
-        clean_msg = message.replace("@claude", "").strip()
-        print(f"[Agents] Asking Claude...")
-        reply = ask_claude(clean_msg, context)
-        return [{
-            "agent":   "Claude",
-            "model":   "claude",
-            "color":   "#534AB7",
-            "message": reply,
-            "round":   1
-        }]
+    # Cloud/API agents
+    for agent_key, agent in CLOUD_AGENTS.items():
+        mentions = [agent["mention"], *agent.get("aliases", [])]
+        if any(mention in msg_lower for mention in mentions):
+            print(f"[Agents] Asking {agent['name']}...")
+            return [run_cloud_agent(agent_key, message, context)]
 
     # Specific agent mentions
     mentioned = []

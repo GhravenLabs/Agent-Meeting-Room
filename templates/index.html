@@ -622,7 +622,7 @@
     <img class="room-logo" id="room-logo" alt="">
     <div>
       <h1 id="room-title">Agent Meeting Room</h1>
-      <p id="room-subtitle">4 local AI agents + Claude on demand</p>
+      <p id="room-subtitle">4 local AI agents + cloud AI on demand</p>
     </div>
   </div>
   <div class="header-actions">
@@ -655,7 +655,9 @@
       <strong style="color:#555">@phi3</strong> — creative thinker<br>
       <strong style="color:#555">@gemma2</strong> — balanced summarizer<br>
       <strong style="color:#555">@deepseek</strong> — deep reasoning<br>
-      <strong style="color:#555">@claude</strong> — most capable (paid API)<br>
+      <strong style="color:#555">@claude</strong> — nuanced advisor (paid API)<br>
+      <strong style="color:#555">@codex</strong> — coding/product advisor (paid API)<br>
+      <strong style="color:#555">@gemini</strong> or <strong style="color:#555">@google</strong> — research/planning advisor (paid API)<br>
       <strong style="color:#555">@all</strong> — all 4 local agents<br>
       <strong style="color:#555">@debate</strong> — structured debate with rounds<br>
       <strong style="color:#555">@talk</strong> - agents talk freely for the selected duration
@@ -668,7 +670,7 @@
     <textarea
       class="input-box"
       id="input"
-      placeholder="Type a message... use @mistral @phi3 @gemma2 @deepseek @claude @all @debate @talk"
+      placeholder="Type a message... use @mistral @phi3 @gemma2 @deepseek @claude @codex @gemini @all @debate @talk"
       rows="1"
       onkeydown="handleKey(event)"
       oninput="autoResize(this)"
@@ -681,6 +683,8 @@
     <div class="hint" onclick="setInput('@talk the future of open source AI')">@talk free talk</div>
     <div class="hint" onclick="setInput('@mistral explain this to me: ')">@mistral explain</div>
     <div class="hint" onclick="setInput('@claude I need your best analysis on: ')">@claude deep dive</div>
+    <div class="hint" onclick="setInput('@codex turn this into an implementation plan: ')">@codex implementation</div>
+    <div class="hint" onclick="setInput('@gemini map the options for: ')">@gemini options</div>
     <div class="hint" onclick="setInput('@deepseek reason through: ')">@deepseek reason</div>
   </div>
 </div>
@@ -834,6 +838,8 @@
     'Gemma2':   '#7F77DD',
     'DeepSeek': '#E05C5C',
     'Claude':   '#534AB7',
+    'Codex':    '#10A37F',
+    'Gemini':   '#4285F4',
     'Summary':  '#BA7517'
   };
 
@@ -871,7 +877,7 @@
     if(!customization) return;
     const room = customization.room || {};
     document.getElementById('room-title').textContent = room.title || 'Agent Meeting Room';
-    document.getElementById('room-subtitle').textContent = room.subtitle || room.purpose || '4 local AI agents + Claude on demand';
+    document.getElementById('room-subtitle').textContent = room.subtitle || room.purpose || '4 local AI agents + cloud AI on demand';
     const logo = document.getElementById('room-logo');
     if(room.logo){
       logo.src = room.logo;
@@ -881,7 +887,7 @@
       logo.style.display = 'none';
     }
 
-    agentColors = {'Claude':'#534AB7', 'Summary':'#BA7517'};
+    agentColors = {'Claude':'#534AB7', 'Codex':'#10A37F', 'Gemini':'#4285F4', 'Summary':'#BA7517'};
     for(const agent of Object.values(customization.agents || {})){
       agentColors[agent.display_name || agent.name] = agent.color;
     }
@@ -903,6 +909,12 @@
     chips.push(`
       <div class="agent-chip" style="color:#534AB7;border-color:#534AB733;background:#534AB714" onclick="insertMention('@claude')">
         <span class="avatar" style="background:#534AB7">C</span>Claude
+      </div>
+      <div class="agent-chip" style="color:#10A37F;border-color:#10A37F33;background:#10A37F14" onclick="insertMention('@codex')">
+        <span class="avatar" style="background:#10A37F">Co</span>Codex
+      </div>
+      <div class="agent-chip" style="color:#4285F4;border-color:#4285F433;background:#4285F414" onclick="insertMention('@gemini')">
+        <span class="avatar" style="background:#4285F4">G</span>Gemini
       </div>
       <div class="agent-chip" style="color:#e0ddd5;border-color:#33333a;background:#1a1a22" onclick="insertMention('@all')">
         <div class="dot" style="background:#e0ddd5"></div>All agents
