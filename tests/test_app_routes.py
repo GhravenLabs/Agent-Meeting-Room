@@ -145,6 +145,43 @@ class AppRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("_No messages yet._", body)
 
+    def test_deliverable_types_returns_formats(self):
+        response = self.client.get("/deliverable_types")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            {"key": "code_review", "label": "Code Review Summary"},
+            response.json["types"],
+        )
+
+    def test_generate_deliverable_returns_markdown(self):
+        app_module.conversation_history.extend([
+            {"role": "user", "content": "Ship structured meeting outputs."},
+            {"role": "Codex", "content": "Add a deterministic Markdown generator."},
+        ])
+
+        with patch.object(
+            app_module,
+            "load_config",
+            return_value={"room": {"title": "Delivery Room"}},
+        ):
+            response = self.client.post(
+                "/generate_deliverable",
+                json={"kind": "pull_request"},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        markdown = response.json["markdown"]
+        self.assertIn("# Pull Request Description", markdown)
+        self.assertIn("- Room: Delivery Room", markdown)
+        self.assertIn("Ship structured meeting outputs.", markdown)
+
+    def test_generate_deliverable_rejects_unknown_kind(self):
+        response = self.client.post("/generate_deliverable", json={"kind": "bad"})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json["error"], "unknown deliverable type")
+
     def test_memory_search_rejects_empty_query(self):
         response = self.client.post("/memory_search", json={"query": "   "})
 

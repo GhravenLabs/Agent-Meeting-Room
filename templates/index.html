@@ -605,6 +605,18 @@
     line-height: 1.5;
   }
 
+  .deliverable-preview {
+    min-height: 320px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    line-height: 1.5;
+  }
+
+  .deliverable-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
   @media (max-width: 780px) {
     .modal-body { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
@@ -656,6 +668,7 @@
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn-clear" onclick="openDeliverables()">Structured Delivery</button>
     <button class="btn-clear" onclick="exportTranscript()">Export Markdown</button>
     <button class="btn-clear" onclick="openMemorySearch()">Search Memory</button>
     <button class="btn-clear" onclick="openSettings()">Customize</button>
@@ -868,6 +881,30 @@
   </div>
 </div>
 
+<div class="modal-backdrop compact" id="deliverable-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Structured Delivery</h2>
+      <button class="btn-clear" onclick="closeDeliverables()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Output format</label>
+        <select id="deliverable-kind-input"></select>
+      </div>
+      <div class="deliverable-actions">
+        <button class="btn-primary" onclick="generateDeliverable()">Generate</button>
+        <button class="btn-secondary" onclick="copyDeliverable()">Copy Markdown</button>
+        <button class="btn-secondary" onclick="downloadDeliverable()">Download Markdown</button>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>Markdown draft</label>
+        <textarea class="deliverable-preview" id="deliverable-preview" placeholder="Generate a structured delivery from the current meeting..."></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   const messagesEl = document.getElementById('messages');
   const inputEl    = document.getElementById('input');
@@ -881,6 +918,9 @@
   const memoryModal = document.getElementById('memory-modal');
   const memoryQueryInput = document.getElementById('memory-query-input');
   const memoryResultsEl = document.getElementById('memory-results');
+  const deliverableModal = document.getElementById('deliverable-modal');
+  const deliverableKindInput = document.getElementById('deliverable-kind-input');
+  const deliverablePreview = document.getElementById('deliverable-preview');
 
   let customization = null;
   let selectedAgentKey = 'mistral';
@@ -894,6 +934,7 @@
     'Gemini':   '#4285F4',
     'Summary':  '#BA7517'
   };
+  let deliverableTypes = [];
 
   // Talk session state
   let currentTalkSession = null;
@@ -1104,6 +1145,80 @@
 
   function closeMemorySearch(){
     memoryModal.classList.remove('active');
+  }
+
+  async function loadDeliverableTypes(){
+    if(deliverableTypes.length) return deliverableTypes;
+    const res = await fetch('/deliverable_types');
+    const data = await res.json();
+    deliverableTypes = data.types || [];
+    deliverableKindInput.innerHTML = deliverableTypes.map(type =>
+      `<option value="${escapeHtml(type.key)}">${escapeHtml(type.label)}</option>`
+    ).join('');
+    return deliverableTypes;
+  }
+
+  async function openDeliverables(){
+    deliverableModal.classList.add('active');
+    try {
+      await loadDeliverableTypes();
+    } catch(err) {
+      showToast('Could not load delivery formats');
+    }
+  }
+
+  function closeDeliverables(){
+    deliverableModal.classList.remove('active');
+  }
+
+  async function generateDeliverable(){
+    const kind = deliverableKindInput.value;
+    if(!kind) return showToast('Choose a delivery format');
+    deliverablePreview.value = 'Generating...';
+    try {
+      const res = await fetch('/generate_deliverable', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({kind})
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'Generation failed');
+      deliverablePreview.value = data.markdown || '';
+      showToast('Structured delivery generated');
+    } catch(err) {
+      deliverablePreview.value = '';
+      showToast('Could not generate delivery');
+    }
+  }
+
+  async function copyDeliverable(){
+    const markdown = deliverablePreview.value.trim();
+    if(!markdown) return showToast('Generate a delivery first');
+    try {
+      await navigator.clipboard.writeText(markdown);
+      showToast('Markdown copied');
+    } catch(err) {
+      deliverablePreview.select();
+      document.execCommand('copy');
+      showToast('Markdown copied');
+    }
+  }
+
+  function downloadDeliverable(){
+    const markdown = deliverablePreview.value.trim();
+    if(!markdown) return showToast('Generate a delivery first');
+    const label = deliverableTypes.find(type => type.key === deliverableKindInput.value)?.label || 'delivery';
+    const filename = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'delivery';
+    const blob = new Blob([markdown], {type: 'text/markdown;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}-${Date.now()}.md`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    showToast('Delivery downloaded');
   }
 
   function renderMemoryResults(results){

@@ -36,6 +36,7 @@ Imagine a group chat where everyone at the table is an AI — each with a differ
 - **Memory** — save meeting notes directly to an Obsidian vault
 - **Searchable memory** — find saved Markdown notes from the room UI
 - **Transcript export** — download the current meeting as a Markdown file
+- **Structured deliveries** — turn a meeting into PR descriptions, issue drafts, plans, release notes, and review summaries
 - **Cloud agent commands** — Claude, Codex/OpenAI, and Gemini/Google can join on demand
 
 ---
@@ -113,6 +114,14 @@ Agent Meeting Room is meant to feel like your own digital table, not a fixed dem
 | TTS voices | Let browser speech synthesis read agent replies, with optional voice name hints per agent |
 
 Customizations are stored locally in `agent_profiles.json`, which is ignored by Git so each room can keep its own private setup.
+
+---
+
+## Structured deliveries
+
+After a meeting, click **Structured Delivery** to generate a Markdown draft from the current conversation. Built-in formats include Code Review Summary, Product Decision Memo, Research Brief, Implementation Plan, Bug Report, Release Notes Draft, GitHub Issue Draft, and Pull Request Description.
+
+Each draft can be copied or downloaded, so the room can move from discussion to a practical artifact without needing another tool.
 
 ---
 

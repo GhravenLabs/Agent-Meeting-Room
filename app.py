@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, Response, stream_wit
 from agents import CLOUD_AGENTS, run_agents, run_free_talk_thread
 from memory import save_to_obsidian, get_recent_memory, get_memory_status, search_memory
 from customization import load_config, save_config, get_room_config, clamp_free_talk_duration
+from deliverables import deliverable_options, generate_deliverable
 from datetime import datetime, timezone
 import os
 import sys
@@ -264,6 +265,23 @@ def export_transcript():
         mimetype="text/markdown; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{transcript_filename()}"'},
     )
+
+
+@app.route("/deliverable_types")
+def get_deliverable_types():
+    return jsonify({"types": deliverable_options()})
+
+
+@app.route("/generate_deliverable", methods=["POST"])
+def generate_structured_deliverable():
+    data = request.get_json(silent=True) or {}
+    kind = data.get("kind", "").strip()
+    room_title = load_config().get("room", {}).get("title") or "Agent Meeting Room"
+    try:
+        markdown = generate_deliverable(kind, conversation_history, room_title)
+    except ValueError:
+        return jsonify({"error": "unknown deliverable type"}), 400
+    return jsonify({"markdown": markdown})
 
 
 @app.route("/memory_search", methods=["POST"])
