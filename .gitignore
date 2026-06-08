@@ -43,3 +43,4 @@ agent_profiles.json
 # Build outputs
 build/
 dist/
+*.msi
