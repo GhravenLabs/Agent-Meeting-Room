@@ -4,6 +4,14 @@ All notable changes to Agent Meeting Room are documented here.
 
 ## [Unreleased]
 
+### Planned
+- Configurable agent response length via UI slider
+- Dark/light theme toggle
+
+---
+
+## [1.9.0] - 2026-06-08
+
 ### Added
 - Meeting templates for Code Review, Product Debate, Research, and Planning rooms with starter prompts.
 - Search saved local/Obsidian Markdown memory notes from the room UI.
@@ -13,10 +21,6 @@ All notable changes to Agent Meeting Room are documented here.
 ### Fixed
 - Packaged launcher now validates `PORT`, waits for Flask to respond, and only then opens the browser.
 - Claude API responses now check HTTP status before parsing JSON, making API failures easier to diagnose.
-
-### Planned
-- Configurable agent response length via UI slider
-- Dark/light theme toggle
 
 ---
 
