@@ -13,6 +13,10 @@ venv/
 env/
 .env/
 
+# Node / optional Pake desktop shell
+node_modules/
+npm-debug.log*
+
 # Claude Code local settings
 .claude/
 
@@ -35,3 +39,7 @@ agent_profiles.json
 
 # Local development logs
 *.log
+
+# Build outputs
+build/
+dist/

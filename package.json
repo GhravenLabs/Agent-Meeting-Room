@@ -1,0 +1,14 @@
+{
+  "name": "agent-meeting-room-desktop",
+  "version": "1.9.0",
+  "private": true,
+  "description": "Optional Pake desktop shell build scripts for Agent Meeting Room.",
+  "scripts": {
+    "desktop:pake": "powershell -ExecutionPolicy Bypass -File scripts/build-pake-desktop.ps1",
+    "desktop:pake:msi": "powershell -ExecutionPolicy Bypass -File scripts/build-pake-desktop.ps1 -Targets msi",
+    "desktop:pake:help": "pake --help"
+  },
+  "devDependencies": {
+    "pake-cli": "^3.11.8"
+  }
+}

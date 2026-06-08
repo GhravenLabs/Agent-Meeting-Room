@@ -135,7 +135,17 @@ The repo includes `AgentMeetingRoom_Setup.iss` for Inno Setup if you want a full
 > ollama pull mistral
 > ```
 
-### Option C — Run from source (developers)
+### Option C — Optional Pake desktop shell
+The repo also includes an experimental Pake build path for wrapping the local Flask UI in a native desktop window:
+
+```powershell
+npm install
+npm run desktop:pake:msi
+```
+
+This requires Node.js, Rust/Cargo, Python, and Ollama. See [docs/PAKE_DESKTOP.md](docs/PAKE_DESKTOP.md) for details.
+
+### Option D — Run from source (developers)
 See [Quick Start](#quick-start) below.
 
 

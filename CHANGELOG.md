@@ -4,6 +4,9 @@ All notable changes to Agent Meeting Room are documented here.
 
 ## [Unreleased]
 
+### Added
+- Optional Pake desktop shell build path for wrapping the local Flask UI in a native desktop window.
+
 ### Planned
 - Configurable agent response length via UI slider
 - Dark/light theme toggle
