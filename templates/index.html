@@ -946,6 +946,13 @@
         <label>Find saved meeting notes</label>
         <input id="memory-query-input" placeholder="Search saved notes...">
       </div>
+      <div class="field">
+        <label>Search mode</label>
+        <select id="memory-search-mode-input">
+          <option value="keyword">Keyword</option>
+          <option value="semantic">Semantic memory</option>
+        </select>
+      </div>
       <button class="btn-primary" onclick="searchMemory()">Search</button>
       <div class="memory-results" id="memory-results"></div>
     </div>
@@ -1018,6 +1025,7 @@
   const settingsModal = document.getElementById('settings-modal');
   const memoryModal = document.getElementById('memory-modal');
   const memoryQueryInput = document.getElementById('memory-query-input');
+  const memorySearchModeInput = document.getElementById('memory-search-mode-input');
   const memoryResultsEl = document.getElementById('memory-results');
   const historyModal = document.getElementById('history-modal');
   const historyQueryInput = document.getElementById('history-query-input');
@@ -1418,7 +1426,7 @@
     showToast('Delivery downloaded');
   }
 
-  function renderMemoryResults(results){
+  function renderMemoryResults(results, mode='keyword'){
     if(!results.length){
       memoryResultsEl.innerHTML = '<div class="memory-result"><p>No matching notes found.</p></div>';
       return;
@@ -1427,6 +1435,7 @@
       <div class="memory-result">
         <h4>${escapeHtml(result.title)}</h4>
         <p>${escapeHtml(result.snippet)}</p>
+        ${mode === 'semantic' && Number.isFinite(result.score) ? `<p>Semantic score: ${Number(result.score).toFixed(3)}</p>` : ''}
       </div>
     `).join('');
   }
@@ -1434,16 +1443,22 @@
   async function searchMemory(){
     const query = memoryQueryInput.value.trim();
     if(!query) return showToast('Enter a memory search term');
+    const mode = memorySearchModeInput.value || 'keyword';
     memoryResultsEl.innerHTML = '<div class="memory-result"><p>Searching...</p></div>';
     try {
-      const res = await fetch('/memory_search', {
+      const endpoint = mode === 'semantic' ? '/semantic_memory_search' : '/memory_search';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({query})
       });
       const data = await res.json();
       if(!res.ok) throw new Error(data.error || 'Search failed');
-      renderMemoryResults(data.results || []);
+      if(mode === 'semantic' && data.semantic && !data.semantic.available){
+        memoryResultsEl.innerHTML = `<div class="memory-result"><p>Semantic memory is not available yet. ${escapeHtml(data.semantic.error || '')}</p></div>`;
+        return;
+      }
+      renderMemoryResults(data.results || [], mode);
     } catch(err) {
       memoryResultsEl.innerHTML = '<div class="memory-result"><p>Could not search memory.</p></div>';
     }

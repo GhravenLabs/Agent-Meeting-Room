@@ -3,6 +3,7 @@ from agents import CLOUD_AGENTS, run_agents, run_free_talk_thread
 from memory import save_to_obsidian, get_recent_memory, get_memory_status, search_memory
 from customization import load_config, save_config, get_room_config, clamp_free_talk_duration
 from deliverables import deliverable_options, generate_deliverable
+from semantic_memory import search_semantic_memory
 from datetime import datetime, timezone
 import os
 import sys
@@ -295,10 +296,34 @@ def memory_search():
     query = data.get("query", "").strip()
     if not query:
         return jsonify({"error": "empty query"}), 400
+    memory = get_memory_status()
     return jsonify({
         "query": query,
         "results": search_memory(query),
-        "memory": get_memory_status(),
+        "memory": memory,
+    })
+
+
+@app.route("/semantic_memory_search", methods=["POST"])
+def semantic_memory_search():
+    data = request.get_json(silent=True) or {}
+    query = data.get("query", "").strip()
+    if not query:
+        return jsonify({"error": "empty query"}), 400
+    memory = get_memory_status()
+    if not memory.get("path"):
+        return jsonify({
+            "query": query,
+            "results": [],
+            "memory": memory,
+            "semantic": {"available": False, "error": "memory backend disabled"},
+        })
+    semantic = search_semantic_memory(memory["path"], query)
+    return jsonify({
+        "query": query,
+        "results": semantic.get("results", []),
+        "memory": memory,
+        "semantic": semantic,
     })
 
 

@@ -13,6 +13,7 @@ import os
 import re
 from datetime import datetime
 from dotenv import load_dotenv
+from semantic_memory import index_note, semantic_status
 
 load_dotenv()
 
@@ -95,6 +96,8 @@ def save_to_obsidian(title: str, content: str) -> bool:
         memory_path = os.path.join(memory_dir, MEMORY_FILE)
         with open(memory_path, "a", encoding="utf-8") as f:
             f.write(f"\n## {title} — {timestamp}\n{content}\n\n")
+
+        index_note(memory_dir, filename, title, content)
 
         print(f"[Memory] Saved to {filepath}  (backend: {ACTIVE_BACKEND})")
         return True
@@ -195,8 +198,11 @@ def clear_memory() -> bool:
 
 def get_memory_status() -> dict:
     """Return current memory backend info (used by /status endpoint)."""
+    backend = ACTIVE_BACKEND
+    memory_dir = _get_memory_dir() if backend != "none" else None
     return {
-        "backend":    ACTIVE_BACKEND,
-        "path":       _get_memory_dir() if ACTIVE_BACKEND != "none" else None,
-        "configured": ACTIVE_BACKEND != "none",
+        "backend":    backend,
+        "path":       memory_dir,
+        "configured": backend != "none",
+        "semantic":   semantic_status(memory_dir) if memory_dir else {"enabled": False, "available": False},
     }

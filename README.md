@@ -35,6 +35,7 @@ Imagine a group chat where everyone at the table is an AI — each with a differ
 - **Meeting templates** — Code Review, Product Debate, Research, and Planning starter rooms
 - **Memory** — save meeting notes directly to an Obsidian vault
 - **Searchable memory** — find saved Markdown notes from the room UI
+- **Optional semantic memory** — use embeddings and TurboVec to find related notes by meaning
 - **Transcript export** — download the current meeting as a Markdown file
 - **Structured deliveries** — turn a meeting into PR descriptions, issue drafts, plans, release notes, and review summaries
 - **Meeting history** — search the current room and jump back to earlier messages
@@ -129,6 +130,28 @@ Each draft can be copied or downloaded, so the room can move from discussion to 
 ## Meeting history
 
 The **Meeting History** panel gives the current room a searchable timeline with message counts, participant counts, and quick jump links back to earlier user or agent messages. The UI restores the server-side in-memory history on reload, so active desktop sessions feel less fragile.
+
+---
+
+## Semantic memory
+
+Keyword memory search works out of the box. For deeper retrieval, Agent Meeting Room also has an optional semantic memory path that indexes saved notes with embeddings and TurboVec.
+
+To try it:
+
+```bash
+ollama pull nomic-embed-text
+pip install numpy turbovec
+```
+
+Then set:
+
+```env
+SEMANTIC_MEMORY_ENABLED=true
+SEMANTIC_MEMORY_MODEL=nomic-embed-text
+```
+
+When available, the **Search Memory** panel can switch from **Keyword** to **Semantic memory**. If TurboVec, NumPy, or the embedding model is missing, the app keeps working and explains that semantic search is unavailable.
 
 ---
 
@@ -228,6 +251,8 @@ Open `.env` and set:
 | `GEMINI_MODEL` | Optional | Overrides the Gemini model, default `gemini-2.5-flash` |
 | `MEMORY_BACKEND` | Optional | `local` (default), `obsidian`, or `none` |
 | `OBSIDIAN_VAULT_PATH` | Optional | Only if `MEMORY_BACKEND=obsidian` |
+| `SEMANTIC_MEMORY_ENABLED` | Optional | Enables TurboVec-backed semantic note search |
+| `SEMANTIC_MEMORY_MODEL` | Optional | Ollama embedding model, default `nomic-embed-text` |
 
 **Memory is optional.** By default it saves notes to `./meeting_notes/` next to `app.py` — no Obsidian needed.
 

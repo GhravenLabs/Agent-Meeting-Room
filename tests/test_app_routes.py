@@ -211,6 +211,35 @@ class AppRouteTests(unittest.TestCase):
         self.assertEqual(response.json["query"], "useful")
         self.assertEqual(response.json["results"][0]["title"], "Note")
 
+    def test_semantic_memory_search_rejects_empty_query(self):
+        response = self.client.post("/semantic_memory_search", json={"query": "   "})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json["error"], "empty query")
+
+    def test_semantic_memory_search_returns_results(self):
+        with (
+            patch.object(
+                app_module,
+                "get_memory_status",
+                return_value={"path": "notes", "semantic": {"enabled": True}},
+            ),
+            patch.object(
+                app_module,
+                "search_semantic_memory",
+                return_value={
+                    "available": True,
+                    "results": [{"title": "Related", "filename": "note.md", "snippet": "Nearby idea", "score": 0.9}],
+                    "error": "",
+                },
+            ),
+        ):
+            response = self.client.post("/semantic_memory_search", json={"query": "desktop memory"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["results"][0]["title"], "Related")
+        self.assertTrue(response.json["semantic"]["available"])
+
 
 if __name__ == "__main__":
     unittest.main()
