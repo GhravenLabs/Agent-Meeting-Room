@@ -8,18 +8,26 @@ import os
 import threading
 import webbrowser
 import time
+import ctypes
 from urllib import error, request
+
+DESKTOP_DATA_DIR = os.getenv("AGENT_MEETING_ROOM_DATA_DIR")
 
 # Path setup: frozen (exe) vs normal (python launcher.py)
 if getattr(sys, 'frozen', False):
-    EXE_DIR  = os.path.dirname(sys.executable)
+    EXE_DIR  = DESKTOP_DATA_DIR or os.path.dirname(sys.executable)
     BASE_DIR = sys._MEIPASS
-    os.chdir(EXE_DIR)
 else:
-    EXE_DIR  = os.path.dirname(os.path.abspath(__file__))
+    EXE_DIR  = DESKTOP_DATA_DIR or os.path.dirname(os.path.abspath(__file__))
     BASE_DIR = EXE_DIR
 
+os.makedirs(EXE_DIR, exist_ok=True)
+os.chdir(EXE_DIR)
 sys.path.insert(0, BASE_DIR)
+
+if DESKTOP_DATA_DIR:
+    os.environ.setdefault("LOCAL_MEMORY_PATH", os.path.join(EXE_DIR, "meeting_notes"))
+    os.environ.setdefault("AGENT_PROFILES_PATH", os.path.join(EXE_DIR, "agent_profiles.json"))
 
 from dotenv import load_dotenv
 load_dotenv(os.path.join(EXE_DIR, '.env'), override=False)
@@ -62,8 +70,51 @@ def open_browser_when_ready(url: str = URL) -> bool:
     return True
 
 
+def process_exists(pid: int) -> bool:
+    """Return whether a process id still exists."""
+    if pid <= 0:
+        return False
+    if os.name == "nt":
+        process_query_limited_information = 0x1000
+        handle = ctypes.windll.kernel32.OpenProcess(
+            process_query_limited_information,
+            False,
+            pid,
+        )
+        if handle:
+            ctypes.windll.kernel32.CloseHandle(handle)
+            return True
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def exit_when_parent_exits(interval: float = 2.0):
+    """Exit the backend if it was launched by a desktop shell that is gone."""
+    try:
+        parent_pid = int(os.getenv("AGENT_MEETING_ROOM_PARENT_PID", "0"))
+    except ValueError:
+        return
+    if parent_pid <= 0:
+        return
+
+    def monitor_parent():
+        while True:
+            if not process_exists(parent_pid):
+                os._exit(0)
+            time.sleep(interval)
+
+    threading.Thread(target=monitor_parent, daemon=True).start()
+
+
 def main():
-    threading.Thread(target=open_browser_when_ready, daemon=True).start()
+    if os.getenv("AGENT_MEETING_ROOM_DESKTOP") != "1":
+        threading.Thread(target=open_browser_when_ready, daemon=True).start()
+    else:
+        exit_when_parent_exits()
 
     from app import app, check_ollama, check_ollama_models, print_startup_banner
     from memory import get_memory_status

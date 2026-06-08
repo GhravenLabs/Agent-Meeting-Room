@@ -1,11 +1,15 @@
 import copy
 import json
+import os
 from pathlib import Path
 
 from agents import AGENTS
 
 
-CONFIG_PATH = Path(__file__).with_name("agent_profiles.json")
+CONFIG_PATH = Path(os.getenv(
+    "AGENT_PROFILES_PATH",
+    Path(__file__).with_name("agent_profiles.json"),
+))
 
 DEFAULT_ROOM = {
     "title": "Agent Meeting Room",

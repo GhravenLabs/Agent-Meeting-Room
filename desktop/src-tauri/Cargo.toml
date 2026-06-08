@@ -1,0 +1,29 @@
+[package]
+name = "agent-meeting-room-desktop"
+version = "1.9.0"
+description = "Native desktop shell for Agent Meeting Room"
+authors = ["Ghraven"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.85.0"
+
+[build-dependencies]
+tauri-build = { version = "2.5.5", features = [] }
+
+[dependencies]
+tauri = { version = "2.10.2", features = ["image-ico", "image-png"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61.2", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_JobObjects",
+    "Win32_System_Threading",
+] }
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = "thin"
+opt-level = "z"
+strip = true

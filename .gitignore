@@ -16,6 +16,9 @@ env/
 # Node / optional Pake desktop shell
 node_modules/
 npm-debug.log*
+desktop/node_modules/
+desktop/src-tauri/gen/
+desktop/src-tauri/target/
 
 # Claude Code local settings
 .claude/

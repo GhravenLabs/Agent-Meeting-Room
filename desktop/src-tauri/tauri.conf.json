@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Agent Meeting Room",
+  "version": "1.9.0",
+  "identifier": "com.ghraven.agentmeetingroom",
+  "build": {
+    "frontendDist": "../loading"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi"],
+    "icon": [
+      "../../assets/icon.png",
+      "../../assets/icon.ico"
+    ],
+    "resources": [
+      "../../dist/AgentMeetingRoomBackend.exe",
+      "../../.env.example"
+    ],
+    "windows": {
+      "digestAlgorithm": "sha256",
+      "wix": {
+        "language": ["en-US"]
+      }
+    }
+  },
+  "mainBinaryName": "AgentMeetingRoomDesktop"
+}

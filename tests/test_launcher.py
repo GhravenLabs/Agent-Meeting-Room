@@ -47,6 +47,10 @@ class LauncherTests(unittest.TestCase):
 
         open_browser.assert_not_called()
 
+    def test_process_exists_checks_current_process(self):
+        self.assertTrue(launcher.process_exists(os.getpid()))
+        self.assertFalse(launcher.process_exists(-1))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,7 @@
   "scripts": {
     "desktop:pake": "powershell -ExecutionPolicy Bypass -File scripts/build-pake-desktop.ps1",
     "desktop:pake:msi": "powershell -ExecutionPolicy Bypass -File scripts/build-pake-desktop.ps1 -Targets msi",
+    "desktop:tauri": "powershell -ExecutionPolicy Bypass -File scripts/build-tauri-desktop.ps1",
     "desktop:pake:help": "pake --help"
   },
   "devDependencies": {
