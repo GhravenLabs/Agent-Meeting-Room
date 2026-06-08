@@ -82,7 +82,7 @@ try {
         --height 860 `
         --min-width 960 `
         --min-height 640 `
-        --app-version "1.9.0" `
+        --app-version "1.10.0" `
         --targets $Targets `
         --force-internal-navigation
 }
