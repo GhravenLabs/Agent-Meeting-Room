@@ -267,6 +267,11 @@ def export_transcript():
     )
 
 
+@app.route("/history")
+def get_history():
+    return jsonify({"messages": conversation_history})
+
+
 @app.route("/deliverable_types")
 def get_deliverable_types():
     return jsonify({"types": deliverable_options()})

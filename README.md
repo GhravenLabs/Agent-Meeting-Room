@@ -37,6 +37,7 @@ Imagine a group chat where everyone at the table is an AI — each with a differ
 - **Searchable memory** — find saved Markdown notes from the room UI
 - **Transcript export** — download the current meeting as a Markdown file
 - **Structured deliveries** — turn a meeting into PR descriptions, issue drafts, plans, release notes, and review summaries
+- **Meeting history** — search the current room and jump back to earlier messages
 - **Cloud agent commands** — Claude, Codex/OpenAI, and Gemini/Google can join on demand
 
 ---
@@ -122,6 +123,12 @@ Customizations are stored locally in `agent_profiles.json`, which is ignored by 
 After a meeting, click **Structured Delivery** to generate a Markdown draft from the current conversation. Built-in formats include Code Review Summary, Product Decision Memo, Research Brief, Implementation Plan, Bug Report, Release Notes Draft, GitHub Issue Draft, and Pull Request Description.
 
 Each draft can be copied or downloaded, so the room can move from discussion to a practical artifact without needing another tool.
+
+---
+
+## Meeting history
+
+The **Meeting History** panel gives the current room a searchable timeline with message counts, participant counts, and quick jump links back to earlier user or agent messages. The UI restores the server-side in-memory history on reload, so active desktop sessions feel less fragile.
 
 ---
 

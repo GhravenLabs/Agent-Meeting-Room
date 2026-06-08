@@ -145,6 +145,17 @@ class AppRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("_No messages yet._", body)
 
+    def test_history_returns_current_conversation(self):
+        app_module.conversation_history.extend([
+            {"role": "user", "content": "Review this plan."},
+            {"role": "Codex", "content": "The scope looks focused."},
+        ])
+
+        response = self.client.get("/history")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["messages"], app_module.conversation_history)
+
     def test_deliverable_types_returns_formats(self):
         response = self.client.get("/deliverable_types")
 

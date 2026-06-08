@@ -191,6 +191,10 @@
   .messages::-webkit-scrollbar-thumb { background: #2a2a35; border-radius: 2px; }
 
   .msg-group { display: flex; flex-direction: column; gap: 4px; }
+  .msg-group.history-match .bubble {
+    border-color: #1D9E75;
+    box-shadow: 0 0 0 1px #1D9E7533;
+  }
 
   .msg-user {
     align-self: flex-end;
@@ -605,6 +609,72 @@
     line-height: 1.5;
   }
 
+  .history-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .history-stat {
+    border: 1px solid #252532;
+    border-radius: 8px;
+    padding: 10px;
+    background: #101018;
+  }
+
+  .history-stat strong {
+    display: block;
+    font-size: 18px;
+    color: #e0ddd5;
+  }
+
+  .history-stat span {
+    display: block;
+    margin-top: 3px;
+    font-size: 11px;
+    color: #777;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 360px;
+    overflow-y: auto;
+    margin-top: 12px;
+  }
+
+  .history-item {
+    border: 1px solid #252532;
+    background: #101018;
+    color: #aaa;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .history-item:hover {
+    border-color: #3a3a45;
+    color: #e0ddd5;
+  }
+
+  .history-item-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    color: #e0ddd5;
+    margin-bottom: 5px;
+  }
+
+  .history-item p {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #888;
+  }
+
   .deliverable-preview {
     min-height: 320px;
     font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
@@ -669,6 +739,7 @@
   </div>
   <div class="header-actions">
     <button class="btn-clear" onclick="openDeliverables()">Structured Delivery</button>
+    <button class="btn-clear" onclick="openMeetingHistory()">Meeting History</button>
     <button class="btn-clear" onclick="exportTranscript()">Export Markdown</button>
     <button class="btn-clear" onclick="openMemorySearch()">Search Memory</button>
     <button class="btn-clear" onclick="openSettings()">Customize</button>
@@ -881,6 +952,36 @@
   </div>
 </div>
 
+<div class="modal-backdrop compact" id="history-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Meeting History</h2>
+      <button class="btn-clear" onclick="closeMeetingHistory()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="history-summary">
+        <div class="history-stat">
+          <strong id="history-message-count">0</strong>
+          <span>messages</span>
+        </div>
+        <div class="history-stat">
+          <strong id="history-agent-count">0</strong>
+          <span>participants</span>
+        </div>
+        <div class="history-stat">
+          <strong id="history-user-count">0</strong>
+          <span>your turns</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Search current meeting</label>
+        <input id="history-query-input" placeholder="Find a topic, agent, or phrase...">
+      </div>
+      <div class="history-list" id="history-results"></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop compact" id="deliverable-modal">
   <div class="modal">
     <div class="modal-header">
@@ -918,6 +1019,9 @@
   const memoryModal = document.getElementById('memory-modal');
   const memoryQueryInput = document.getElementById('memory-query-input');
   const memoryResultsEl = document.getElementById('memory-results');
+  const historyModal = document.getElementById('history-modal');
+  const historyQueryInput = document.getElementById('history-query-input');
+  const historyResultsEl = document.getElementById('history-results');
   const deliverableModal = document.getElementById('deliverable-modal');
   const deliverableKindInput = document.getElementById('deliverable-kind-input');
   const deliverablePreview = document.getElementById('deliverable-preview');
@@ -935,6 +1039,8 @@
     'Summary':  '#BA7517'
   };
   let deliverableTypes = [];
+  let meetingHistory = [];
+  let messageSequence = 0;
 
   // Talk session state
   let currentTalkSession = null;
@@ -1147,6 +1253,97 @@
     memoryModal.classList.remove('active');
   }
 
+  function messageSnippet(text, limit=160){
+    const clean = String(text || '').replace(/\s+/g, ' ').trim();
+    if(clean.length <= limit) return clean || 'No content';
+    return `${clean.slice(0, limit - 3).trim()}...`;
+  }
+
+  function recordHistory(role, content, element){
+    messageSequence += 1;
+    const item = {
+      id: `msg-${messageSequence}`,
+      role,
+      content,
+      timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+    };
+    meetingHistory.push(item);
+    if(element){
+      element.dataset.historyId = item.id;
+    }
+    if(historyModal.classList.contains('active')){
+      renderMeetingHistory();
+    }
+    return item;
+  }
+
+  function renderMeetingHistory(){
+    const query = historyQueryInput.value.trim().toLowerCase();
+    const filtered = meetingHistory.filter(item => {
+      if(!query) return true;
+      return `${item.role} ${item.content}`.toLowerCase().includes(query);
+    });
+    const participants = new Set(meetingHistory.map(item => item.role).filter(Boolean));
+    document.getElementById('history-message-count').textContent = meetingHistory.length;
+    document.getElementById('history-agent-count').textContent = participants.size;
+    document.getElementById('history-user-count').textContent = meetingHistory.filter(item => item.role === 'You' || item.role === 'user').length;
+
+    if(!filtered.length){
+      historyResultsEl.innerHTML = '<div class="history-item"><p>No matching meeting messages found.</p></div>';
+      return;
+    }
+
+    historyResultsEl.innerHTML = filtered.map(item => `
+      <button class="history-item" onclick="jumpToHistoryMessage('${item.id}')">
+        <div class="history-item-title">
+          <strong>${escapeHtml(item.role)}</strong>
+          <span>${escapeHtml(item.timestamp)}</span>
+        </div>
+        <p>${escapeHtml(messageSnippet(item.content))}</p>
+      </button>
+    `).join('');
+  }
+
+  function openMeetingHistory(){
+    renderMeetingHistory();
+    historyModal.classList.add('active');
+    setTimeout(() => historyQueryInput.focus(), 0);
+  }
+
+  function closeMeetingHistory(){
+    historyModal.classList.remove('active');
+  }
+
+  function jumpToHistoryMessage(id){
+    const target = messagesEl.querySelector(`[data-history-id="${id}"]`);
+    if(!target) return showToast('Message is not visible in the current room');
+    target.scrollIntoView({behavior: 'smooth', block: 'center'});
+    target.classList.add('history-match');
+    setTimeout(() => target.classList.remove('history-match'), 1800);
+    closeMeetingHistory();
+  }
+
+  async function restoreMeetingHistory(){
+    try {
+      const res = await fetch('/history');
+      const data = await res.json();
+      const messages = data.messages || [];
+      if(!messages.length) return;
+      const empty = document.getElementById('empty');
+      if(empty) empty.remove();
+      for(const item of messages){
+        if(item.role === 'user'){
+          addUserMessage(item.content);
+        } else {
+          const color = agentColors[item.role] || '#888';
+          addAgentMessage(item.role, item.content, color, 1, false, '', '', true, false);
+        }
+      }
+    } catch(err) {
+      showToast('Could not restore meeting history');
+    }
+  }
+
   async function loadDeliverableTypes(){
     if(deliverableTypes.length) return deliverableTypes;
     const res = await fetch('/deliverable_types');
@@ -1288,6 +1485,14 @@
     }
   });
 
+  historyQueryInput.addEventListener('input', renderMeetingHistory);
+  historyQueryInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      e.preventDefault();
+      closeMeetingHistory();
+    }
+  });
+
   function autoResize(el){
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, 120) + 'px';
@@ -1307,8 +1512,9 @@
     autoResize(inputEl);
   }
 
-  function addUserMessage(text){
-    if(emptyEl) emptyEl.remove();
+  function addUserMessage(text, saveToHistory=true){
+    const empty = document.getElementById('empty');
+    if(empty) empty.remove();
     const div = document.createElement('div');
     div.className = 'msg-group msg-user';
     div.innerHTML = `
@@ -1316,6 +1522,7 @@
       <div class="bubble">${escapeHtml(text)}</div>
     `;
     messagesEl.appendChild(div);
+    if(saveToHistory) recordHistory('You', text, div);
     scrollBottom();
   }
 
@@ -1348,7 +1555,7 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  function addAgentMessage(agent, message, color, round, isLive, avatar='', voice=''){
+  function addAgentMessage(agent, message, color, round, isLive, avatar='', voice='', saveToHistory=true, shouldSpeak=true){
     const div = document.createElement('div');
     div.className = 'msg-group msg-agent';
 
@@ -1379,7 +1586,8 @@
       </div>
     `;
     messagesEl.appendChild(div);
-    speakAgentMessage(message, voice);
+    if(saveToHistory) recordHistory(agent, message, div);
+    if(shouldSpeak) speakAgentMessage(message, voice);
     scrollBottom();
   }
 
@@ -1456,6 +1664,9 @@
 
   async function clearChat(){
     await fetch('/clear', {method:'POST'});
+    meetingHistory = [];
+    messageSequence = 0;
+    historyQueryInput.value = '';
     messagesEl.innerHTML = `
       <div class="empty-state" id="empty">
         <h2>Meeting room is open</h2>
@@ -1622,7 +1833,7 @@
   loadCustomization().catch(() => {
     showToast('Could not load customization');
     renderAgentChips();
-  });
+  }).finally(restoreMeetingHistory);
 </script>
 </body>
 </html>

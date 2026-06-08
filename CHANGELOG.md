@@ -8,6 +8,7 @@ All notable changes to Agent Meeting Room are documented here.
 - Optional Pake desktop shell build path for wrapping the local Flask UI in a native desktop window.
 - Tauri desktop shell build that bundles and launches the Flask backend sidecar automatically.
 - Structured Delivery generator for turning the current meeting into Markdown PR descriptions, issue drafts, implementation plans, research briefs, release notes, bug reports, and review summaries.
+- Meeting History panel with searchable current-room messages, participant stats, jump-to-message links, and backend history restore on reload.
 
 ### Planned
 - Configurable agent response length via UI slider
