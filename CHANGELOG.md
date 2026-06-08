@@ -5,6 +5,7 @@ All notable changes to Agent Meeting Room are documented here.
 ## [Unreleased]
 
 ### Added
+- Export the current meeting transcript as a Markdown download from the room header.
 - Optional Codex/OpenAI and Gemini/Google cloud agents with `@codex`, `@gemini`, and `@google` mention routing.
 
 ### Fixed
@@ -12,7 +13,6 @@ All notable changes to Agent Meeting Room are documented here.
 - Claude API responses now check HTTP status before parsing JSON, making API failures easier to diagnose.
 
 ### Planned
-- Export meeting transcript as Markdown
 - Configurable agent response length via UI slider
 - Dark/light theme toggle
 

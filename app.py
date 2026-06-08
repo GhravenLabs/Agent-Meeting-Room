@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, Response, stream_wit
 from agents import CLOUD_AGENTS, run_agents, run_free_talk_thread
 from memory import save_to_obsidian, get_recent_memory, get_memory_status
 from customization import load_config, save_config, get_room_config, clamp_free_talk_duration
+from datetime import datetime, timezone
 import os
 import sys
 import json
@@ -67,6 +68,43 @@ def cloud_agent_status() -> dict:
             "configured": configured,
         }
     return status
+
+
+def markdown_heading(text: str) -> str:
+    """Keep generated headings readable even when user content contains hashes."""
+    return str(text or "").replace("#", "").strip() or "Untitled"
+
+
+def build_transcript_markdown() -> str:
+    """Render the current in-memory conversation as a Markdown transcript."""
+    room = load_config().get("room", {})
+    room_title = markdown_heading(room.get("title") or "Agent Meeting Room")
+    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    lines = [
+        f"# {room_title} Transcript",
+        "",
+        f"- Generated: {generated_at}",
+        f"- Messages: {len(conversation_history)}",
+        "",
+        "## Conversation",
+        "",
+    ]
+
+    if not conversation_history:
+        lines.append("_No messages yet._")
+        lines.append("")
+        return "\n".join(lines)
+
+    for index, entry in enumerate(conversation_history, start=1):
+        role = markdown_heading(entry.get("role", "Unknown"))
+        content = str(entry.get("content", "")).strip() or "_No content_"
+        lines.extend([f"### {index}. {role}", "", content, ""])
+    return "\n".join(lines)
+
+
+def transcript_filename() -> str:
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
+    return f"agent_meeting_room_transcript_{stamp}.md"
 
 
 # ── Startup checks ────────────────────────────────────────────
@@ -218,6 +256,16 @@ def save_memory():
     return jsonify({"saved": result, "backend": get_memory_status()["backend"]})
 
 
+@app.route("/export_transcript")
+def export_transcript():
+    markdown = build_transcript_markdown()
+    return Response(
+        markdown,
+        mimetype="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{transcript_filename()}"'},
+    )
+
+
 @app.route("/clear", methods=["POST"])
 def clear():
     conversation_history.clear()
@@ -230,6 +278,9 @@ def start_talk():
     topic = data.get("topic", "").strip()
     if not topic:
         return jsonify({"error": "no topic"}), 400
+
+    conversation_history.append({"role": "user", "content": f"@talk {topic}"})
+    trim_conversation_history()
 
     session_id = uuid.uuid4().hex[:10]
     q          = queue.Queue()
@@ -268,6 +319,11 @@ def talk_stream(session_id):
                 if msg is None:
                     yield 'data: {"done": true}\n\n'
                     break
+                conversation_history.append({
+                    "role": msg.get("agent", "Agent"),
+                    "content": msg.get("message", ""),
+                })
+                trim_conversation_history()
                 yield f"data: {json.dumps(msg)}\n\n"
         finally:
             talk_sessions.pop(session_id, None)

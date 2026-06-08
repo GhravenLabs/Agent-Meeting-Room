@@ -33,6 +33,7 @@ Imagine a group chat where everyone at the table is an AI — each with a differ
 - **Debate mode** — structured 3-round argument with a final summary
 - **Free Talk** — agents stream a live discussion on any topic via SSE
 - **Memory** — save meeting notes directly to an Obsidian vault
+- **Transcript export** — download the current meeting as a Markdown file
 - **Cloud agent commands** — Claude, Codex/OpenAI, and Gemini/Google can join on demand
 
 ---

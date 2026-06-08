@@ -112,6 +112,39 @@ class AppRouteTests(unittest.TestCase):
             app_module.talk_stop_events.clear()
             app_module.talk_stop_events.update(original_events)
 
+    def test_export_transcript_returns_markdown_attachment(self):
+        app_module.conversation_history.extend([
+            {"role": "user", "content": "@all summarize this"},
+            {"role": "Mistral", "content": "Here is the summary."},
+        ])
+
+        with patch.object(
+            app_module,
+            "load_config",
+            return_value={"room": {"title": "Demo Room"}},
+        ):
+            response = self.client.get("/export_transcript")
+
+        body = response.data.decode("utf-8")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/markdown", response.content_type)
+        self.assertIn(
+            'attachment; filename="agent_meeting_room_transcript_',
+            response.headers["Content-Disposition"],
+        )
+        self.assertIn("# Demo Room Transcript", body)
+        self.assertIn("### 1. user", body)
+        self.assertIn("@all summarize this", body)
+        self.assertIn("### 2. Mistral", body)
+        self.assertIn("Here is the summary.", body)
+
+    def test_export_transcript_handles_empty_history(self):
+        response = self.client.get("/export_transcript")
+
+        body = response.data.decode("utf-8")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("_No messages yet._", body)
+
 
 if __name__ == "__main__":
     unittest.main()

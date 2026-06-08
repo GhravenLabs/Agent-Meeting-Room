@@ -626,6 +626,7 @@
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn-clear" onclick="exportTranscript()">Export Markdown</button>
     <button class="btn-clear" onclick="openSettings()">Customize</button>
     <button class="btn-clear" onclick="clearChat()">Clear chat</button>
   </div>
@@ -1203,6 +1204,29 @@
       showToast('Saved to Obsidian vault');
     } else {
       btn.textContent = 'Error';
+    }
+  }
+
+  async function exportTranscript(){
+    try {
+      const res = await fetch('/export_transcript');
+      if(!res.ok) throw new Error('Export failed');
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const header = res.headers.get('Content-Disposition') || '';
+      const match = header.match(/filename="([^"]+)"/);
+
+      link.href = url;
+      link.download = match ? match[1] : `agent_meeting_room_transcript_${Date.now()}.md`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast('Transcript exported');
+    } catch(err) {
+      showToast('Could not export transcript');
     }
   }
 
