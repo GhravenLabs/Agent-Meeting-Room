@@ -124,6 +124,61 @@ def get_recent_memory(max_chars: int = 1500) -> str:
         return ""
 
 
+def _build_snippet(content: str, query: str, radius: int = 90) -> str:
+    lower_content = content.lower()
+    lower_query = query.lower()
+    index = lower_content.find(lower_query)
+    if index < 0:
+        return content[: radius * 2].strip()
+    start = max(0, index - radius)
+    end = min(len(content), index + len(query) + radius)
+    prefix = "..." if start else ""
+    suffix = "..." if end < len(content) else ""
+    return f"{prefix}{content[start:end].strip()}{suffix}"
+
+
+def search_memory(query: str, limit: int = 8) -> list:
+    """Search saved Markdown notes in the active memory folder."""
+    if ACTIVE_BACKEND == "none":
+        return []
+    query = (query or "").strip()
+    if not query:
+        return []
+
+    memory_dir = _get_memory_dir()
+    if not os.path.isdir(memory_dir):
+        return []
+
+    results = []
+    try:
+        note_names = sorted(
+            (name for name in os.listdir(memory_dir) if name.lower().endswith(".md")),
+            reverse=True,
+        )
+        for name in note_names:
+            path = os.path.join(memory_dir, name)
+            if not os.path.isfile(path):
+                continue
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    content = f.read()
+            except OSError:
+                continue
+            if query.lower() not in content.lower():
+                continue
+            first_line = next((line.strip("# ").strip() for line in content.splitlines() if line.strip()), name)
+            results.append({
+                "title": first_line or name,
+                "filename": name,
+                "snippet": _build_snippet(content, query),
+            })
+            if len(results) >= limit:
+                break
+    except OSError as e:
+        print(f"[Memory] Error searching: {e}")
+    return results
+
+
 def clear_memory() -> bool:
     """Clear the rolling memory file."""
     if ACTIVE_BACKEND == "none":

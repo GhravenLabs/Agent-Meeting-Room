@@ -30,6 +30,30 @@ class MemoryTests(unittest.TestCase):
                 memory.ACTIVE_BACKEND = original_backend
                 memory.LOCAL_MEMORY_DIR = original_local_dir
 
+    def test_search_memory_returns_matching_notes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            original_backend = memory.ACTIVE_BACKEND
+            original_local_dir = memory.LOCAL_MEMORY_DIR
+            memory.ACTIVE_BACKEND = "local"
+            memory.LOCAL_MEMORY_DIR = tmpdir
+            try:
+                path = os.path.join(tmpdir, "20260608_Code_Review.md")
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write("# Code Review\n\nDiscussed transcript export and memory search.")
+
+                results = memory.search_memory("memory search")
+
+                self.assertEqual(len(results), 1)
+                self.assertEqual(results[0]["title"], "Code Review")
+                self.assertEqual(results[0]["filename"], "20260608_Code_Review.md")
+                self.assertIn("memory search", results[0]["snippet"])
+            finally:
+                memory.ACTIVE_BACKEND = original_backend
+                memory.LOCAL_MEMORY_DIR = original_local_dir
+
+    def test_search_memory_ignores_empty_query(self):
+        self.assertEqual(memory.search_memory("   "), [])
+
 
 if __name__ == "__main__":
     unittest.main()

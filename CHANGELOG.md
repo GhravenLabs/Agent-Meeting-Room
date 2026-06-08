@@ -5,6 +5,8 @@ All notable changes to Agent Meeting Room are documented here.
 ## [Unreleased]
 
 ### Added
+- Meeting templates for Code Review, Product Debate, Research, and Planning rooms with starter prompts.
+- Search saved local/Obsidian Markdown memory notes from the room UI.
 - Export the current meeting transcript as a Markdown download from the room header.
 - Optional Codex/OpenAI and Gemini/Google cloud agents with `@codex`, `@gemini`, and `@google` mention routing.
 

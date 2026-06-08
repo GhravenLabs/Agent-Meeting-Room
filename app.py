@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from agents import CLOUD_AGENTS, run_agents, run_free_talk_thread
-from memory import save_to_obsidian, get_recent_memory, get_memory_status
+from memory import save_to_obsidian, get_recent_memory, get_memory_status, search_memory
 from customization import load_config, save_config, get_room_config, clamp_free_talk_duration
 from datetime import datetime, timezone
 import os
@@ -264,6 +264,19 @@ def export_transcript():
         mimetype="text/markdown; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{transcript_filename()}"'},
     )
+
+
+@app.route("/memory_search", methods=["POST"])
+def memory_search():
+    data = request.get_json(silent=True) or {}
+    query = data.get("query", "").strip()
+    if not query:
+        return jsonify({"error": "empty query"}), 400
+    return jsonify({
+        "query": query,
+        "results": search_memory(query),
+        "memory": get_memory_status(),
+    })
 
 
 @app.route("/clear", methods=["POST"])

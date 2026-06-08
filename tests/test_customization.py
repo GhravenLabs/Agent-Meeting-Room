@@ -24,6 +24,27 @@ class CustomizationConfigTests(unittest.TestCase):
 
         self.assertEqual(config["presets"]["mixed"]["agents"], ["mistral"])
 
+    def test_default_templates_include_starter_prompts(self):
+        config = customization.default_config()
+
+        self.assertIn("@all review", config["presets"]["code_review"]["prompt"])
+        self.assertIn("@debate product decision", config["presets"]["product_debate"]["prompt"])
+        self.assertIn("@all research", config["presets"]["research"]["prompt"])
+        self.assertIn("@all turn this goal", config["presets"]["planning"]["prompt"])
+
+    def test_saved_default_preset_keeps_prompt_when_missing(self):
+        config = customization.normalize_config({
+            "presets": {
+                "code_review": {
+                    "name": "Code Review",
+                    "description": "Old saved preset",
+                    "agents": ["mistral"],
+                }
+            }
+        })
+
+        self.assertIn("@all review", config["presets"]["code_review"]["prompt"])
+
     def test_save_and_load_round_trips_custom_agent_profile(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             original_path = customization.CONFIG_PATH

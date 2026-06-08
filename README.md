@@ -32,7 +32,9 @@ Imagine a group chat where everyone at the table is an AI — each with a differ
 - **@mention routing** — only the agents you tag reply
 - **Debate mode** — structured 3-round argument with a final summary
 - **Free Talk** — agents stream a live discussion on any topic via SSE
+- **Meeting templates** — Code Review, Product Debate, Research, and Planning starter rooms
 - **Memory** — save meeting notes directly to an Obsidian vault
+- **Searchable memory** — find saved Markdown notes from the room UI
 - **Transcript export** — download the current meeting as a Markdown file
 - **Cloud agent commands** — Claude, Codex/OpenAI, and Gemini/Google can join on demand
 
@@ -104,7 +106,8 @@ Agent Meeting Room is meant to feel like your own digital table, not a fixed dem
 | Agent avatars | Choose an image/logo URL or use the generated initials fallback |
 | Agent accent colors | Pick each agent's chip, name, and message highlight color |
 | Persona cards | Edit role, tone, expertise, and meeting behavior from a simple form |
-| Saved presets | Save and load teams such as Product Review, Code Review, Debate Panel, or Creative Room |
+| Saved presets | Save and load teams such as Code Review, Product Debate, Research, or Planning |
+| Meeting templates | Apply Code Review, Product Debate, Research, or Planning templates with starter prompts |
 | Room identity | Set an optional room title, purpose, and logo for demos or recurring meetings |
 | Free Talk duration | Choose short or long discussions, from quick 5-minute syncs to longer 30-minute sessions |
 | TTS voices | Let browser speech synthesis read agent replies, with optional voice name hints per agent |

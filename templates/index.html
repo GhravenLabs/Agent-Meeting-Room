@@ -440,6 +440,10 @@
   }
 
   .modal-backdrop.active { display: flex; }
+  .modal-backdrop.compact .modal { width: min(620px, 100%); }
+  .modal-backdrop.compact .modal-body {
+    display: block;
+  }
 
   .modal {
     width: min(980px, 100%);
@@ -575,6 +579,32 @@
     cursor: pointer;
   }
 
+  .memory-results {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .memory-result {
+    border: 1px solid #252532;
+    border-radius: 8px;
+    padding: 10px;
+    background: #101018;
+  }
+
+  .memory-result h4 {
+    font-size: 12px;
+    color: #e0ddd5;
+    margin-bottom: 5px;
+  }
+
+  .memory-result p {
+    font-size: 12px;
+    color: #888;
+    line-height: 1.5;
+  }
+
   @media (max-width: 780px) {
     .modal-body { grid-template-columns: 1fr; }
     .form-grid { grid-template-columns: 1fr; }
@@ -627,6 +657,7 @@
   </div>
   <div class="header-actions">
     <button class="btn-clear" onclick="exportTranscript()">Export Markdown</button>
+    <button class="btn-clear" onclick="openMemorySearch()">Search Memory</button>
     <button class="btn-clear" onclick="openSettings()">Customize</button>
     <button class="btn-clear" onclick="clearChat()">Clear chat</button>
   </div>
@@ -820,6 +851,23 @@
   </div>
 </div>
 
+<div class="modal-backdrop compact" id="memory-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Search Memory</h2>
+      <button class="btn-clear" onclick="closeMemorySearch()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Find saved meeting notes</label>
+        <input id="memory-query-input" placeholder="Search saved notes...">
+      </div>
+      <button class="btn-primary" onclick="searchMemory()">Search</button>
+      <div class="memory-results" id="memory-results"></div>
+    </div>
+  </div>
+</div>
+
 <script>
   const messagesEl = document.getElementById('messages');
   const inputEl    = document.getElementById('input');
@@ -830,6 +878,9 @@
   const talkTopicEl = document.getElementById('talk-topic-label');
   const agentsBar = document.getElementById('agents-bar');
   const settingsModal = document.getElementById('settings-modal');
+  const memoryModal = document.getElementById('memory-modal');
+  const memoryQueryInput = document.getElementById('memory-query-input');
+  const memoryResultsEl = document.getElementById('memory-results');
 
   let customization = null;
   let selectedAgentKey = 'mistral';
@@ -1000,7 +1051,7 @@
   function renderPresetSelect(){
     const select = document.getElementById('preset-select');
     select.innerHTML = Object.entries(customization.presets || {}).map(([key, preset]) =>
-      `<option value="${escapeHtml(key)}">${escapeHtml(preset.name || key)}</option>`
+      `<option value="${escapeHtml(key)}">${escapeHtml(preset.name || key)}${preset.description ? ` - ${escapeHtml(preset.description)}` : ''}</option>`
     ).join('');
     select.value = customization.active_preset || 'default';
   }
@@ -1013,8 +1064,11 @@
     for(const [agentKey, agent] of Object.entries(customization.agents)){
       agent.enabled = preset.agents.includes(agentKey);
     }
+    if(preset.prompt){
+      setInput(preset.prompt);
+    }
     renderSettings();
-    showToast('Preset applied');
+    showToast('Template applied');
   }
 
   function savePreset(){
@@ -1040,6 +1094,47 @@
 
   function closeSettings(){
     settingsModal.classList.remove('active');
+  }
+
+  function openMemorySearch(){
+    memoryModal.classList.add('active');
+    memoryResultsEl.innerHTML = '';
+    setTimeout(() => memoryQueryInput.focus(), 0);
+  }
+
+  function closeMemorySearch(){
+    memoryModal.classList.remove('active');
+  }
+
+  function renderMemoryResults(results){
+    if(!results.length){
+      memoryResultsEl.innerHTML = '<div class="memory-result"><p>No matching notes found.</p></div>';
+      return;
+    }
+    memoryResultsEl.innerHTML = results.map(result => `
+      <div class="memory-result">
+        <h4>${escapeHtml(result.title)}</h4>
+        <p>${escapeHtml(result.snippet)}</p>
+      </div>
+    `).join('');
+  }
+
+  async function searchMemory(){
+    const query = memoryQueryInput.value.trim();
+    if(!query) return showToast('Enter a memory search term');
+    memoryResultsEl.innerHTML = '<div class="memory-result"><p>Searching...</p></div>';
+    try {
+      const res = await fetch('/memory_search', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({query})
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'Search failed');
+      renderMemoryResults(data.results || []);
+    } catch(err) {
+      memoryResultsEl.innerHTML = '<div class="memory-result"><p>Could not search memory.</p></div>';
+    }
   }
 
   async function saveCustomization(){
@@ -1070,6 +1165,13 @@
       sendMessage();
     }
   }
+
+  memoryQueryInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      searchMemory();
+    }
+  });
 
   function autoResize(el){
     el.style.height = 'auto';

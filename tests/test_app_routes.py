@@ -145,6 +145,24 @@ class AppRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("_No messages yet._", body)
 
+    def test_memory_search_rejects_empty_query(self):
+        response = self.client.post("/memory_search", json={"query": "   "})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json["error"], "empty query")
+
+    def test_memory_search_returns_results(self):
+        with patch.object(
+            app_module,
+            "search_memory",
+            return_value=[{"title": "Note", "filename": "note.md", "snippet": "Useful note"}],
+        ):
+            response = self.client.post("/memory_search", json={"query": "useful"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["query"], "useful")
+        self.assertEqual(response.json["results"][0]["title"], "Note")
+
 
 if __name__ == "__main__":
     unittest.main()

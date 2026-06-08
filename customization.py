@@ -26,16 +26,31 @@ DEFAULT_PRESETS = {
         "name": "Code Review",
         "description": "Practical review with analysis, edge cases, and summary.",
         "agents": ["mistral", "deepseek", "gemma2"],
+        "prompt": "@all review this code for bugs, edge cases, and missing tests:\n\n",
     },
-    "creative_room": {
-        "name": "Creative Room",
-        "description": "Idea generation, lateral thinking, and synthesis.",
-        "agents": ["phi3", "mistral", "gemma2"],
+    "product_debate": {
+        "name": "Product Debate",
+        "description": "Compare tradeoffs, risks, and product decisions from multiple angles.",
+        "agents": ["mistral", "phi3", "deepseek", "gemma2"],
+        "prompt": "@debate product decision: should we build this feature now or wait?\n\nContext:\n",
+    },
+    "research": {
+        "name": "Research",
+        "description": "Map options, assumptions, unknowns, and next investigation steps.",
+        "agents": ["mistral", "gemma2", "deepseek"],
+        "prompt": "@all research this topic and return key facts, risks, and next steps:\n\n",
+    },
+    "planning": {
+        "name": "Planning",
+        "description": "Turn a goal into a scoped implementation plan and checklist.",
+        "agents": ["mistral", "phi3", "gemma2"],
+        "prompt": "@all turn this goal into a practical implementation plan:\n\n",
     },
     "debate_panel": {
         "name": "Debate Panel",
         "description": "Contrasting viewpoints with final synthesis.",
         "agents": ["mistral", "phi3", "deepseek", "gemma2"],
+        "prompt": "@debate ",
     },
 }
 
@@ -118,6 +133,11 @@ def normalize_config(raw):
                 "name": str(preset.get("name") or key),
                 "description": str(preset.get("description") or ""),
                 "agents": [agent for agent in agents if agent in AGENTS],
+                "prompt": str(
+                    preset.get("prompt")
+                    if "prompt" in preset
+                    else config["presets"].get(key, {}).get("prompt", "")
+                ),
             }
 
     active_preset = raw.get("active_preset")
