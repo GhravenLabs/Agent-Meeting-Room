@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+import os
 from unittest.mock import patch
 
 import app as app_module
@@ -8,6 +10,7 @@ class AppRouteTests(unittest.TestCase):
     def setUp(self):
         self.client = app_module.app.test_client()
         app_module.conversation_history.clear()
+        app_module.active_project_context = None
 
     def test_chat_rejects_missing_message(self):
         response = self.client.post("/chat", json={})
@@ -155,6 +158,52 @@ class AppRouteTests(unittest.TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json["messages"], app_module.conversation_history)
+
+    def test_project_context_rejects_empty_path(self):
+        response = self.client.post("/project_context", json={"path": "   "})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json["error"], "empty path")
+
+    def test_project_context_loads_and_clears_folder_summary(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with open(os.path.join(tmpdir, "README.md"), "w", encoding="utf-8") as handle:
+                handle.write("# Demo Project\n\nUseful context.")
+
+            response = self.client.post("/project_context", json={"path": tmpdir})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["project"]["file_count"], 1)
+        self.assertIn("Demo Project", response.json["project"]["context"])
+
+        get_response = self.client.get("/project_context")
+        self.assertEqual(get_response.json["project"]["file_count"], 1)
+
+        clear_response = self.client.delete("/project_context")
+        self.assertEqual(clear_response.status_code, 200)
+        self.assertTrue(clear_response.json["cleared"])
+        self.assertIsNone(app_module.active_project_context)
+
+    def test_chat_includes_loaded_project_context(self):
+        captured = {}
+        app_module.active_project_context = {
+            "context": "PROJECT CONTEXT LOADED:\n- Name: Demo\n--- app.py ---\nprint('hello')"
+        }
+        original = app_module.run_agents
+
+        def fake_run(message, history, memory):
+            captured["memory"] = memory
+            return [{"agent": "TestAgent", "message": "ok"}]
+
+        app_module.run_agents = fake_run
+        try:
+            response = self.client.post("/chat", json={"message": "@all review"})
+        finally:
+            app_module.run_agents = original
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("PROJECT CONTEXT LOADED", captured["memory"])
+        self.assertIn("print('hello')", captured["memory"])
 
     def test_deliverable_types_returns_formats(self):
         response = self.client.get("/deliverable_types")

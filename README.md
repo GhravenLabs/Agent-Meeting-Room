@@ -39,6 +39,7 @@ Imagine a group chat where everyone at the table is an AI — each with a differ
 - **Transcript export** — download the current meeting as a Markdown file
 - **Structured deliveries** — turn a meeting into PR descriptions, issue drafts, plans, release notes, and review summaries
 - **Meeting history** — search the current room and jump back to earlier messages
+- **Project context** — load a local repo/folder so agents can review and plan with codebase context
 - **Cloud agent commands** — Claude, Codex/OpenAI, and Gemini/Google can join on demand
 
 ---
@@ -130,6 +131,14 @@ Each draft can be copied or downloaded, so the room can move from discussion to 
 ## Meeting history
 
 The **Meeting History** panel gives the current room a searchable timeline with message counts, participant counts, and quick jump links back to earlier user or agent messages. The UI restores the server-side in-memory history on reload, so active desktop sessions feel less fragile.
+
+---
+
+## Project context
+
+Click **Project Context** and enter a local folder path to load a concise codebase summary into the room. Agent Meeting Room indexes useful text files, skips heavy folders such as `.git`, `node_modules`, `venv`, `dist`, and `build`, then adds the project summary to future agent prompts.
+
+This is useful for code review meetings, implementation planning, release planning, and project improvement debates without pasting files manually.
 
 ---
 

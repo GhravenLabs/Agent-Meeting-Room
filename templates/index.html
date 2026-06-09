@@ -609,6 +609,30 @@
     line-height: 1.5;
   }
 
+  .project-context-status {
+    border: 1px solid #252532;
+    border-radius: 8px;
+    padding: 10px;
+    background: #101018;
+    color: #888;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .project-context-status strong {
+    display: block;
+    color: #e0ddd5;
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+
+  .project-context-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
   .history-summary {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -741,6 +765,7 @@
     <button class="btn-clear" onclick="openDeliverables()">Structured Delivery</button>
     <button class="btn-clear" onclick="openMeetingHistory()">Meeting History</button>
     <button class="btn-clear" onclick="exportTranscript()">Export Markdown</button>
+    <button class="btn-clear" onclick="openProjectContext()">Project Context</button>
     <button class="btn-clear" onclick="openMemorySearch()">Search Memory</button>
     <button class="btn-clear" onclick="openSettings()">Customize</button>
     <button class="btn-clear" onclick="clearChat()">Clear chat</button>
@@ -959,6 +984,28 @@
   </div>
 </div>
 
+<div class="modal-backdrop compact" id="project-context-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Project Context</h2>
+      <button class="btn-clear" onclick="closeProjectContext()">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Local project folder</label>
+        <input id="project-context-path-input" placeholder="C:\Users\Administrator\Documents\My Project">
+      </div>
+      <div class="project-context-actions">
+        <button class="btn-primary" onclick="loadProjectContext()">Load project</button>
+        <button class="btn-secondary" onclick="clearProjectContext()">Clear context</button>
+      </div>
+      <div class="project-context-status" id="project-context-status">
+        No project loaded. Agents will only use the current meeting and memory.
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-backdrop compact" id="history-modal">
   <div class="modal">
     <div class="modal-header">
@@ -1027,6 +1074,9 @@
   const memoryQueryInput = document.getElementById('memory-query-input');
   const memorySearchModeInput = document.getElementById('memory-search-mode-input');
   const memoryResultsEl = document.getElementById('memory-results');
+  const projectContextModal = document.getElementById('project-context-modal');
+  const projectContextPathInput = document.getElementById('project-context-path-input');
+  const projectContextStatus = document.getElementById('project-context-status');
   const historyModal = document.getElementById('history-modal');
   const historyQueryInput = document.getElementById('history-query-input');
   const historyResultsEl = document.getElementById('history-results');
@@ -1049,6 +1099,7 @@
   let deliverableTypes = [];
   let meetingHistory = [];
   let messageSequence = 0;
+  let activeProjectContext = null;
 
   // Talk session state
   let currentTalkSession = null;
@@ -1426,6 +1477,73 @@
     showToast('Delivery downloaded');
   }
 
+  function renderProjectContextStatus(){
+    const project = activeProjectContext;
+    if(!project){
+      projectContextStatus.innerHTML = 'No project loaded. Agents will only use the current meeting and memory.';
+      return;
+    }
+    const extensions = Object.entries(project.extensions || {})
+      .slice(0, 6)
+      .map(([ext, count]) => `${escapeHtml(ext)} (${count})`)
+      .join(', ');
+    projectContextPathInput.value = project.root || projectContextPathInput.value;
+    projectContextStatus.innerHTML = `
+      <strong>${escapeHtml(project.name || 'Loaded project')}</strong>
+      ${escapeHtml(project.root || '')}<br>
+      Indexed ${project.file_count || 0} files${project.skipped_count ? `, skipped ${project.skipped_count}` : ''}.<br>
+      ${extensions ? `File types: ${extensions}` : ''}
+    `;
+  }
+
+  async function restoreProjectContext(){
+    try {
+      const res = await fetch('/project_context');
+      const data = await res.json();
+      activeProjectContext = data.project || null;
+      renderProjectContextStatus();
+    } catch(err) {
+      activeProjectContext = null;
+    }
+  }
+
+  function openProjectContext(){
+    renderProjectContextStatus();
+    projectContextModal.classList.add('active');
+    setTimeout(() => projectContextPathInput.focus(), 0);
+  }
+
+  function closeProjectContext(){
+    projectContextModal.classList.remove('active');
+  }
+
+  async function loadProjectContext(){
+    const path = projectContextPathInput.value.trim();
+    if(!path) return showToast('Enter a local project folder');
+    projectContextStatus.innerHTML = 'Scanning project...';
+    try {
+      const res = await fetch('/project_context', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({path})
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'Could not load project');
+      activeProjectContext = data.project || null;
+      renderProjectContextStatus();
+      showToast('Project context loaded');
+    } catch(err) {
+      projectContextStatus.innerHTML = `<strong>Could not load project</strong>${escapeHtml(err.message || 'Unknown error')}`;
+    }
+  }
+
+  async function clearProjectContext(){
+    await fetch('/project_context', {method: 'DELETE'});
+    activeProjectContext = null;
+    renderProjectContextStatus();
+    showToast('Project context cleared');
+  }
+
   function renderMemoryResults(results, mode='keyword'){
     if(!results.length){
       memoryResultsEl.innerHTML = '<div class="memory-result"><p>No matching notes found.</p></div>';
@@ -1497,6 +1615,17 @@
     if(e.key === 'Enter'){
       e.preventDefault();
       searchMemory();
+    }
+  });
+
+  projectContextPathInput.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      loadProjectContext();
+    }
+    if(e.key === 'Escape'){
+      e.preventDefault();
+      closeProjectContext();
     }
   });
 
@@ -1845,10 +1974,13 @@
     inputEl.focus();
   }
 
-  loadCustomization().catch(() => {
-    showToast('Could not load customization');
-    renderAgentChips();
-  }).finally(restoreMeetingHistory);
+  Promise.all([
+    loadCustomization().catch(() => {
+      showToast('Could not load customization');
+      renderAgentChips();
+    }),
+    restoreProjectContext()
+  ]).finally(restoreMeetingHistory);
 </script>
 </body>
 </html>

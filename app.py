@@ -3,6 +3,7 @@ from agents import CLOUD_AGENTS, run_agents, run_free_talk_thread
 from memory import save_to_obsidian, get_recent_memory, get_memory_status, search_memory
 from customization import load_config, save_config, get_room_config, clamp_free_talk_duration
 from deliverables import deliverable_options, generate_deliverable
+from project_context import summarize_project
 from semantic_memory import search_semantic_memory
 from datetime import datetime, timezone
 import os
@@ -18,6 +19,7 @@ load_dotenv()
 
 app = Flask(__name__)
 conversation_history = []
+active_project_context = None
 MAX_CONVERSATION_HISTORY = 50
 MAX_TALK_SESSIONS = 100
 talk_sessions    = {}   # session_id -> queue.Queue
@@ -102,6 +104,18 @@ def build_transcript_markdown() -> str:
         content = str(entry.get("content", "")).strip() or "_No content_"
         lines.extend([f"### {index}. {role}", "", content, ""])
     return "\n".join(lines)
+
+
+def build_agent_context() -> str:
+    """Combine persistent memory and optional project context for agents."""
+    parts = []
+    project = active_project_context or {}
+    if project.get("context"):
+        parts.append(project["context"])
+    memory_context = get_recent_memory()
+    if memory_context:
+        parts.append(memory_context)
+    return "\n\n".join(parts)
 
 
 def transcript_filename() -> str:
@@ -237,7 +251,7 @@ def chat():
         return jsonify({"error": "empty message"}), 400
 
     conversation_history.append({"role": "user", "content": user_msg})
-    memory_context = get_recent_memory()
+    memory_context = build_agent_context()
     responses = run_agents(user_msg, conversation_history, memory_context)
 
     for r in responses:
@@ -271,6 +285,32 @@ def export_transcript():
 @app.route("/history")
 def get_history():
     return jsonify({"messages": conversation_history})
+
+
+@app.route("/project_context", methods=["GET"])
+def get_project_context():
+    return jsonify({"project": active_project_context})
+
+
+@app.route("/project_context", methods=["POST"])
+def load_project_context():
+    global active_project_context
+    data = request.get_json(silent=True) or {}
+    path = data.get("path", "").strip()
+    if not path:
+        return jsonify({"error": "empty path"}), 400
+    try:
+        active_project_context = summarize_project(path)
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 400
+    return jsonify({"project": active_project_context})
+
+
+@app.route("/project_context", methods=["DELETE"])
+def clear_project_context():
+    global active_project_context
+    active_project_context = None
+    return jsonify({"cleared": True})
 
 
 @app.route("/deliverable_types")
@@ -357,7 +397,7 @@ def start_talk():
 
     thread = threading.Thread(
         target=run_free_talk_thread,
-        args=(topic, list(conversation_history), q, stop_event, duration),
+        args=(topic, list(conversation_history), q, stop_event, duration, build_agent_context()),
         daemon=True
     )
     thread.start()

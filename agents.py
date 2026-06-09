@@ -465,7 +465,7 @@ def run_agents(message, conversation_history, memory_context=""):
     return responses
 
 
-def run_free_talk_thread(topic, conversation_history, output_queue, stop_event, duration=None):
+def run_free_talk_thread(topic, conversation_history, output_queue, stop_event, duration=None, memory_context=""):
     """
     Run all local agents in a free-flowing conversation for `duration` seconds.
     Each agent takes turns responding to the group.
@@ -482,7 +482,7 @@ def run_free_talk_thread(topic, conversation_history, output_queue, stop_event, 
     if not agent_keys:
         output_queue.put(None)
         return
-    initial_context = build_context(conversation_history)
+    initial_context = build_context(conversation_history, memory_context)
     turn = 0
 
     while not stop_event.is_set() and (time.time() - start_time) < duration:
