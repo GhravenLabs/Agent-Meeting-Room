@@ -4,6 +4,15 @@ All notable changes to Agent Meeting Room are documented here.
 
 ## [Unreleased]
 
+### Added
+- GitHub Actions CI workflow — ruff lint + full unittest suite on Ubuntu and Windows (Python 3.11/3.12), with CI badge in README.
+
+### Changed
+- Updated Claude model from `claude-sonnet-4-5` to `claude-sonnet-4-6` in `agents.py` and README agents table.
+
+### Fixed
+- Removed unused `json` import in `agents.py` and extraneous f-string prefix (ruff F401/F541); marked the intentional late `dotenv` import in `launcher.py` with `noqa: E402`.
+
 ---
 
 ## [1.11.0] - 2026-06-10

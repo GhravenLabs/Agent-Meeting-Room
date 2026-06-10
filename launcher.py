@@ -29,7 +29,7 @@ if DESKTOP_DATA_DIR:
     os.environ.setdefault("LOCAL_MEMORY_PATH", os.path.join(EXE_DIR, "meeting_notes"))
     os.environ.setdefault("AGENT_PROFILES_PATH", os.path.join(EXE_DIR, "agent_profiles.json"))
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402 — env vars must be set before dotenv loads
 load_dotenv(os.path.join(EXE_DIR, '.env'), override=False)
 
 DEFAULT_PORT = 5000

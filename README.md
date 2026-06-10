@@ -14,6 +14,7 @@
   <img src="https://img.shields.io/badge/Flask-2.x-black?style=flat-square&logo=flask" />
   <img src="https://img.shields.io/badge/Ollama-local-orange?style=flat-square" />
   <img src="https://img.shields.io/badge/Cloud%20AI-optional-purple?style=flat-square" />
+  <a href="https://github.com/GhravenLabs/Agent-Meeting-Room/actions/workflows/ci.yml"><img src="https://github.com/GhravenLabs/Agent-Meeting-Room/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" />
 </p>
 
@@ -54,7 +55,7 @@ All local agents run **any Ollama-compatible model** — swap by editing the `"m
 | `@phi3` | `phi3` | ~2 GB | Creative lateral thinker |
 | `@gemma2` | `gemma2:2b` | ~1.5 GB | Balanced careful summarizer |
 | `@deepseek` | `deepseek-r1:7b` | ~4.7 GB | Deep step-by-step reasoner |
-| <code>&#64;claude</code> | `claude-sonnet-4-5` | API | Collaborative nuanced advisor |
+| <code>&#64;claude</code> | `claude-sonnet-4-6` | API | Collaborative nuanced advisor |
 | <code>&#64;codex</code> | `OPENAI_MODEL` (`gpt-4.1-mini` default) | API | Coding and product advisor |
 | <code>&#64;gemini</code> / <code>&#64;google</code> | `GEMINI_MODEL` (`gemini-2.5-flash` default) | API | Research and planning advisor |
 

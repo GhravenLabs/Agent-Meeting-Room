@@ -1,5 +1,4 @@
 import requests
-import json
 import os
 import time
 from dotenv import load_dotenv
@@ -46,7 +45,7 @@ asked for detail. You are in a group meeting with other AI agents."""
     }
 }
 
-CLAUDE_MODEL = "claude-sonnet-4-5"
+CLAUDE_MODEL = "claude-sonnet-4-6"
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
@@ -392,7 +391,7 @@ Summarize in 2-3 sentences:
 2. What did they disagree on?
 3. What is the best answer based on the discussion?"""
 
-    print(f"[Debate] Round 3 — summarizing...")
+    print("[Debate] Round 3 — summarizing...")
     summary_agent = agents.get("gemma2", AGENTS["gemma2"])
     summary = ask_ollama(
         summary_agent["model"],
