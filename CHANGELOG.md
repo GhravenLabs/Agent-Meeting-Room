@@ -7,9 +7,9 @@ All notable changes to Agent Meeting Room are documented here.
 ### Added
 - Project Context import for loading local repo/folder summaries into future agent prompts.
 - `docs/ROADMAP.md` for tracking the next product improvements day by day.
+- Configurable agent response length via a room settings slider.
 
 ### Planned
-- Configurable agent response length via UI slider
 - Dark/light theme toggle
 
 ---

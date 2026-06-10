@@ -878,6 +878,17 @@
               </select>
             </div>
           </div>
+          <div class="field">
+            <label>Response length: <span id="response-word-limit-label">150</span> words</label>
+            <input
+              id="response-word-limit-input"
+              type="range"
+              min="50"
+              max="500"
+              step="25"
+              oninput="updateResponseLimitLabel()"
+            >
+          </div>
         </div>
 
         <div class="settings-panel" style="margin-top:12px">
@@ -1194,6 +1205,8 @@
     document.getElementById('room-logo-input').value = room.logo || '';
     document.getElementById('room-subtitle-input').value = room.subtitle || room.purpose || '';
     document.getElementById('free-talk-duration-input').value = String(room.free_talk_duration || 300);
+    document.getElementById('response-word-limit-input').value = String(room.response_word_limit || 150);
+    updateResponseLimitLabel();
     document.getElementById('tts-enabled-input').value = String(Boolean(room.tts_enabled));
 
     const list = document.getElementById('agent-editor-list');
@@ -1251,7 +1264,14 @@
     customization.room.logo = document.getElementById('room-logo-input').value.trim();
     customization.room.subtitle = document.getElementById('room-subtitle-input').value.trim();
     customization.room.free_talk_duration = Number(document.getElementById('free-talk-duration-input').value || 300);
+    customization.room.response_word_limit = Number(document.getElementById('response-word-limit-input').value || 150);
     customization.room.tts_enabled = document.getElementById('tts-enabled-input').value === 'true';
+  }
+
+  function updateResponseLimitLabel(){
+    const input = document.getElementById('response-word-limit-input');
+    const label = document.getElementById('response-word-limit-label');
+    if(input && label) label.textContent = input.value || '150';
   }
 
   function renderPresetSelect(){

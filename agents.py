@@ -96,8 +96,24 @@ def build_context(conversation_history, memory_context=""):
     return context
 
 
+def response_word_limit() -> int:
+    """Return the room-level response word limit."""
+    try:
+        from customization import get_room_config
+
+        return int(get_room_config().get("response_word_limit", 150))
+    except Exception:
+        return 150
+
+
+def response_length_instruction(limit: int | None = None) -> str:
+    limit = limit or response_word_limit()
+    return f"For this room, keep your reply under {limit} words unless the user explicitly asks for more detail."
+
+
 def ask_ollama(model, system_prompt, user_message, context="", _retries=1):
     """Ask a local Ollama model. Retries once on failure with a 2s backoff."""
+    system_prompt = f"{system_prompt}\n\n{response_length_instruction()}"
     full_prompt = ""
     if context:
         full_prompt += f"{context}\n\n"
@@ -136,6 +152,7 @@ joining a meeting with other AI agents. You give thoughtful,
 nuanced responses. You are the most capable agent in the room 
 but you are collaborative not domineering. Be concise unless 
 asked for detail."""
+    system = f"{system}\n\n{response_length_instruction()}"
 
     full_message = ""
     if context:
@@ -185,6 +202,7 @@ def ask_codex(message, context=""):
 joining a meeting with other AI agents. You are direct, careful, and helpful.
 Focus on clear implementation advice and tradeoffs. Be concise unless asked
 for detail."""
+    instructions = f"{instructions}\n\n{response_length_instruction()}"
 
     full_message = ""
     if context:
@@ -231,6 +249,7 @@ def ask_gemini(message, context=""):
     system = """You are Gemini, a broad research and planning AI joining a
 meeting with other AI agents. You are balanced, curious, and good at finding
 practical options. Be concise unless asked for detail."""
+    system = f"{system}\n\n{response_length_instruction()}"
 
     full_message = f"{system}\n\n"
     if context:
@@ -342,7 +361,7 @@ The other agents responded:
 {others_text}
 
 Do you agree, disagree, or want to add something? 
-Be direct and concise — under 100 words."""
+{response_length_instruction()}"""
 
         print(f"[Debate] Round 2 — asking {agent['name']}...")
         reaction = ask_ollama(
@@ -502,7 +521,7 @@ def run_free_talk_thread(topic, conversation_history, output_queue, stop_event, 
 
 It's your turn to speak. React to what others said, share your view,
 or ask a question. Address agents by name if responding to them.
-Keep it under 80 words. Be conversational, not formal."""
+{response_length_instruction()} Be conversational, not formal."""
 
         print(f"[Talk] Turn {turn + 1} — {agent['name']}...")
         reply = ask_ollama(

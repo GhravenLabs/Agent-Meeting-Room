@@ -25,6 +25,25 @@ class ClaudeAgentTests(unittest.TestCase):
 
 
 class CloudAgentTests(unittest.TestCase):
+    def test_ask_ollama_adds_room_response_limit_to_system_prompt(self):
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"response": "Short answer."}
+
+        with (
+            patch("customization.get_room_config", return_value={"response_word_limit": 225}),
+            patch.object(agents.requests, "post", return_value=FakeResponse()) as post,
+        ):
+            result = agents.ask_ollama("mistral", "Base system", "hello", _retries=0)
+
+        self.assertEqual(result, "Short answer.")
+        system_prompt = post.call_args.kwargs["json"]["system"]
+        self.assertIn("Base system", system_prompt)
+        self.assertIn("under 225 words", system_prompt)
+
     def test_ask_codex_parses_output_text(self):
         class FakeResponse:
             def raise_for_status(self):

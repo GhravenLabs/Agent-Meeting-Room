@@ -11,8 +11,14 @@ class CustomizationConfigTests(unittest.TestCase):
         self.assertEqual(customization.clamp_free_talk_duration(9999), 1800)
         self.assertEqual(customization.clamp_free_talk_duration("bad"), 300)
 
+    def test_response_word_limit_is_clamped(self):
+        self.assertEqual(customization.clamp_response_word_limit(10), 50)
+        self.assertEqual(customization.clamp_response_word_limit(9999), 500)
+        self.assertEqual(customization.clamp_response_word_limit("bad"), 150)
+
     def test_presets_only_keep_known_agent_keys(self):
         config = customization.normalize_config({
+            "room": {"response_word_limit": 325},
             "presets": {
                 "mixed": {
                     "name": "Mixed",
@@ -22,6 +28,7 @@ class CustomizationConfigTests(unittest.TestCase):
             }
         })
 
+        self.assertEqual(config["room"]["response_word_limit"], 325)
         self.assertEqual(config["presets"]["mixed"]["agents"], ["mistral"])
 
     def test_default_templates_include_starter_prompts(self):

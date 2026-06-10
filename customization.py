@@ -17,6 +17,7 @@ DEFAULT_ROOM = {
     "logo": "",
     "purpose": "",
     "free_talk_duration": 300,
+    "response_word_limit": 150,
     "tts_enabled": False,
 }
 
@@ -63,6 +64,14 @@ def clamp_free_talk_duration(value, default=300):
     """Clamp Free Talk duration to the supported 1-30 minute range."""
     try:
         return max(60, min(1800, int(value)))
+    except (TypeError, ValueError):
+        return default
+
+
+def clamp_response_word_limit(value, default=150):
+    """Clamp agent replies to the supported 50-500 word range."""
+    try:
+        return max(50, min(500, int(value)))
     except (TypeError, ValueError):
         return default
 
@@ -117,6 +126,9 @@ def normalize_config(raw):
         config["room"].update({k: v for k, v in room.items() if k in config["room"]})
     config["room"]["free_talk_duration"] = clamp_free_talk_duration(
         config["room"].get("free_talk_duration", 300)
+    )
+    config["room"]["response_word_limit"] = clamp_response_word_limit(
+        config["room"].get("response_word_limit", 150)
     )
     config["room"]["tts_enabled"] = bool(config["room"].get("tts_enabled", False))
 
