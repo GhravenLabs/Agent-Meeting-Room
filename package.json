@@ -1,6 +1,6 @@
 {
   "name": "agent-meeting-room-desktop",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "private": true,
   "description": "Optional Pake desktop shell build scripts for Agent Meeting Room.",
   "scripts": {

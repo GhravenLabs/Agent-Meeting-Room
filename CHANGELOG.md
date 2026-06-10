@@ -4,6 +4,10 @@ All notable changes to Agent Meeting Room are documented here.
 
 ## [Unreleased]
 
+---
+
+## [1.11.0] - 2026-06-10
+
 ### Added
 - Project Context import for loading local repo/folder summaries into future agent prompts.
 - `docs/ROADMAP.md` for tracking the next product improvements day by day.
