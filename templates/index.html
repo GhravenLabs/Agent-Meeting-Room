@@ -748,6 +748,65 @@
   }
 
   .toast.show { opacity: 1; }
+
+  body.light-theme {
+    background: #f6f7fb;
+    color: #1f2937;
+  }
+
+  body.light-theme .header,
+  body.light-theme .input-area,
+  body.light-theme .modal {
+    background: #ffffff;
+    border-color: #d8dee9;
+  }
+
+  body.light-theme .agents-bar,
+  body.light-theme .settings-panel,
+  body.light-theme .msg-agent .bubble,
+  body.light-theme .hint {
+    background: #eef2f7;
+    border-color: #d8dee9;
+  }
+
+  body.light-theme .header h1,
+  body.light-theme .modal-header h2,
+  body.light-theme .msg-agent .bubble {
+    color: #1f2937;
+  }
+
+  body.light-theme .header p,
+  body.light-theme .field label,
+  body.light-theme .msg-user .name,
+  body.light-theme .empty-state p {
+    color: #667085;
+  }
+
+  body.light-theme .input-box,
+  body.light-theme .field input,
+  body.light-theme .field textarea,
+  body.light-theme .field select {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #1f2937;
+  }
+
+  body.light-theme .msg-user .bubble {
+    background: #e8edff;
+    border-color: #c8d2ff;
+    color: #28345f;
+  }
+
+  body.light-theme .btn-clear,
+  body.light-theme .btn-secondary {
+    border-color: #cbd5e1;
+    color: #475467;
+  }
+
+  body.light-theme .summary-bubble {
+    background: #fff7e6;
+    border-color: #d8901f;
+  }
 </style>
 </head>
 <body>
@@ -762,6 +821,7 @@
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn-clear" id="theme-toggle-btn" onclick="toggleTheme()">Light mode</button>
     <button class="btn-clear" onclick="openDeliverables()">Structured Delivery</button>
     <button class="btn-clear" onclick="openMeetingHistory()">Meeting History</button>
     <button class="btn-clear" onclick="exportTranscript()">Export Markdown</button>
@@ -877,6 +937,13 @@
                 <option value="true">On after each agent reply</option>
               </select>
             </div>
+          </div>
+          <div class="field">
+            <label>Theme</label>
+            <select id="theme-input" onchange="previewThemeFromSettings()">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
           </div>
           <div class="field">
             <label>Response length: <span id="response-word-limit-label">150</span> words</label>
@@ -1145,6 +1212,7 @@
   function applyCustomizationToUI(){
     if(!customization) return;
     const room = customization.room || {};
+    applyTheme(room.theme || 'dark');
     document.getElementById('room-title').textContent = room.title || 'Agent Meeting Room';
     document.getElementById('room-subtitle').textContent = room.subtitle || room.purpose || '4 local AI agents + cloud AI on demand';
     const logo = document.getElementById('room-logo');
@@ -1207,6 +1275,7 @@
     document.getElementById('free-talk-duration-input').value = String(room.free_talk_duration || 300);
     document.getElementById('response-word-limit-input').value = String(room.response_word_limit || 150);
     updateResponseLimitLabel();
+    document.getElementById('theme-input').value = room.theme || 'dark';
     document.getElementById('tts-enabled-input').value = String(Boolean(room.tts_enabled));
 
     const list = document.getElementById('agent-editor-list');
@@ -1265,7 +1334,38 @@
     customization.room.subtitle = document.getElementById('room-subtitle-input').value.trim();
     customization.room.free_talk_duration = Number(document.getElementById('free-talk-duration-input').value || 300);
     customization.room.response_word_limit = Number(document.getElementById('response-word-limit-input').value || 150);
+    customization.room.theme = document.getElementById('theme-input').value || 'dark';
     customization.room.tts_enabled = document.getElementById('tts-enabled-input').value === 'true';
+  }
+
+  function applyTheme(theme){
+    const normalized = theme === 'light' ? 'light' : 'dark';
+    document.body.classList.toggle('light-theme', normalized === 'light');
+    const btn = document.getElementById('theme-toggle-btn');
+    if(btn) btn.textContent = normalized === 'light' ? 'Dark mode' : 'Light mode';
+  }
+
+  function previewThemeFromSettings(){
+    applyTheme(document.getElementById('theme-input').value);
+  }
+
+  async function persistCustomization(message){
+    const res = await fetch('/customization', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(customization)
+    });
+    customization = await res.json();
+    applyCustomizationToUI();
+    if(message) showToast(message);
+  }
+
+  async function toggleTheme(){
+    if(!customization) return;
+    customization.room = customization.room || {};
+    customization.room.theme = customization.room.theme === 'light' ? 'dark' : 'light';
+    applyTheme(customization.room.theme);
+    await persistCustomization('Theme saved');
   }
 
   function updateResponseLimitLabel(){
@@ -1319,6 +1419,7 @@
   }
 
   function closeSettings(){
+    applyTheme(customization?.room?.theme || 'dark');
     settingsModal.classList.remove('active');
   }
 
@@ -1605,13 +1706,7 @@
   async function saveCustomization(){
     writeAgentForm();
     writeRoomForm();
-    const res = await fetch('/customization', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(customization)
-    });
-    customization = await res.json();
-    applyCustomizationToUI();
+    await persistCustomization();
     closeSettings();
     showToast('Customization saved');
   }

@@ -16,9 +16,14 @@ class CustomizationConfigTests(unittest.TestCase):
         self.assertEqual(customization.clamp_response_word_limit(9999), 500)
         self.assertEqual(customization.clamp_response_word_limit("bad"), 150)
 
+    def test_theme_is_normalized(self):
+        self.assertEqual(customization.normalize_theme("light"), "light")
+        self.assertEqual(customization.normalize_theme("dark"), "dark")
+        self.assertEqual(customization.normalize_theme("solarized"), "dark")
+
     def test_presets_only_keep_known_agent_keys(self):
         config = customization.normalize_config({
-            "room": {"response_word_limit": 325},
+            "room": {"response_word_limit": 325, "theme": "light"},
             "presets": {
                 "mixed": {
                     "name": "Mixed",
@@ -29,6 +34,7 @@ class CustomizationConfigTests(unittest.TestCase):
         })
 
         self.assertEqual(config["room"]["response_word_limit"], 325)
+        self.assertEqual(config["room"]["theme"], "light")
         self.assertEqual(config["presets"]["mixed"]["agents"], ["mistral"])
 
     def test_default_templates_include_starter_prompts(self):
@@ -60,6 +66,7 @@ class CustomizationConfigTests(unittest.TestCase):
                 config = customization.default_config()
                 config["agents"]["mistral"]["display_name"] = "Careful Mistral"
                 config["agents"]["mistral"]["role"] = "Reviewer"
+                config["room"]["theme"] = "light"
 
                 customization.save_config(config)
                 loaded = customization.load_config()
@@ -69,6 +76,7 @@ class CustomizationConfigTests(unittest.TestCase):
                     "Careful Mistral",
                 )
                 self.assertEqual(loaded["agents"]["mistral"]["role"], "Reviewer")
+                self.assertEqual(loaded["room"]["theme"], "light")
             finally:
                 customization.CONFIG_PATH = original_path
 

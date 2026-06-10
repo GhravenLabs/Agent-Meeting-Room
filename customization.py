@@ -18,6 +18,7 @@ DEFAULT_ROOM = {
     "purpose": "",
     "free_talk_duration": 300,
     "response_word_limit": 150,
+    "theme": "dark",
     "tts_enabled": False,
 }
 
@@ -76,6 +77,10 @@ def clamp_response_word_limit(value, default=150):
         return default
 
 
+def normalize_theme(value):
+    return value if value in {"dark", "light"} else "dark"
+
+
 def default_agent_profile(key, agent):
     return {
         "key": key,
@@ -130,6 +135,7 @@ def normalize_config(raw):
     config["room"]["response_word_limit"] = clamp_response_word_limit(
         config["room"].get("response_word_limit", 150)
     )
+    config["room"]["theme"] = normalize_theme(config["room"].get("theme", "dark"))
     config["room"]["tts_enabled"] = bool(config["room"].get("tts_enabled", False))
 
     saved_agents = raw.get("agents", {})
