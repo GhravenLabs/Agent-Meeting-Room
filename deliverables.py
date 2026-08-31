@@ -32,6 +32,16 @@ DELIVERABLE_TYPES = {
             "Next Research Steps",
         ],
     },
+    "research_action_brief": {
+        "label": "Research Action Brief",
+        "sections": [
+            "Decision",
+            "Evidence to Use",
+            "Sellable Asset",
+            "Risks and Gates",
+            "Next 7 Days",
+        ],
+    },
     "implementation_plan": {
         "label": "Implementation Plan",
         "sections": [
@@ -130,6 +140,14 @@ def _section_content(kind: str, section: str, messages: list) -> list:
         return bullets
     if section in {"Steps", "Next Steps", "Recommended Changes", "Proposed Solution", "Suggested Fix"}:
         return ["Turn the strongest points from the meeting into concrete tasks.", "Assign owners and deadlines before sharing externally."]
+    if section == "Evidence to Use":
+        return ["Quote or link only the claims that were actually discussed or verified.", "Separate measured proof from assumptions before publishing."]
+    if section == "Sellable Asset":
+        return ["Turn the research into one concrete proof asset: demo, report, SOP, checklist, lead list, or outreach script."]
+    if section == "Risks and Gates":
+        return ["Name privacy, accuracy, client-data, cost, and public-positioning risks before acting.", "Do not send, publish, or deploy until the required human approval gate is clear."]
+    if section == "Next 7 Days":
+        return ["Choose the smallest useful build or outreach step.", "Define the verification artifact that proves the step worked."]
     if section in {"Testing", "Verification"}:
         return ["Add the local commands, screenshots, or manual checks used to verify this work."]
     if section == "Acceptance Criteria":
