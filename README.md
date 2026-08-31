@@ -125,6 +125,8 @@ Customizations are stored locally in `agent_profiles.json`, which is ignored by 
 
 After a meeting, click **Structured Delivery** to generate a Markdown draft from the current conversation. Built-in formats include Code Review Summary, Product Decision Memo, Research Brief, Research Action Brief, Implementation Plan, Bug Report, Release Notes Draft, GitHub Issue Draft, and Pull Request Description.
 
+![Research Action Brief proof](assets/research-action-brief.png)
+
 Each draft can be copied or downloaded, so the room can move from discussion to a practical artifact without needing another tool.
 
 The Research Action Brief is built for turning large research sessions into something usable: the strongest evidence, the sellable asset it should become, approval gates, risks, and the next 7-day execution step.
