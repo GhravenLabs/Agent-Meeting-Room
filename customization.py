@@ -65,7 +65,7 @@ def clamp_free_talk_duration(value, default=300):
     """Clamp Free Talk duration to the supported 1-30 minute range."""
     try:
         return max(60, min(1800, int(value)))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
 
 
@@ -73,12 +73,12 @@ def clamp_response_word_limit(value, default=150):
     """Clamp agent replies to the supported 50-500 word range."""
     try:
         return max(50, min(500, int(value)))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
 
 
 def normalize_theme(value):
-    return value if value in {"dark", "light"} else "dark"
+    return value if isinstance(value, str) and value in {"dark", "light"} else "dark"
 
 
 def default_agent_profile(key, agent):
@@ -154,7 +154,7 @@ def normalize_config(raw):
             config["presets"][key] = {
                 "name": str(preset.get("name") or key),
                 "description": str(preset.get("description") or ""),
-                "agents": [agent for agent in agents if agent in AGENTS],
+                "agents": [agent for agent in agents if isinstance(agent, str) and agent in AGENTS],
                 "prompt": str(
                     preset.get("prompt")
                     if "prompt" in preset

@@ -11,6 +11,7 @@ and read(max_chars) -> str, then register it in BACKENDS below.
 """
 import os
 import re
+import uuid
 from datetime import datetime
 from dotenv import load_dotenv
 from semantic_memory import index_note, semantic_status
@@ -77,7 +78,7 @@ def save_to_obsidian(title: str, content: str) -> bool:
         os.makedirs(memory_dir, exist_ok=True)
         timestamp  = datetime.now().strftime("%Y-%m-%d %H:%M")
         safe_title = safe_note_title(title)
-        filename   = f"{datetime.now().strftime('%Y%m%d_%H%M')}_{safe_title}.md"
+        filename   = f"{datetime.now().strftime('%Y%m%d_%H%M')}_{uuid.uuid4().hex}_{safe_title}.md"
         filepath   = os.path.join(memory_dir, filename)
 
         note_content = f"""# {title}
@@ -89,7 +90,7 @@ def save_to_obsidian(title: str, content: str) -> bool:
 ---
 #agent-meeting #auto-saved
 """
-        with open(filepath, "w", encoding="utf-8") as f:
+        with open(filepath, "x", encoding="utf-8") as f:
             f.write(note_content)
 
         # Rolling memory file

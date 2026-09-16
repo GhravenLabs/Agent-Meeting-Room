@@ -1,6 +1,7 @@
 import unittest
 import tempfile
 import os
+import threading
 from unittest.mock import patch
 
 import app as app_module
@@ -103,12 +104,14 @@ class AppRouteTests(unittest.TestCase):
         for index in range(app_module.MAX_TALK_SESSIONS):
             session_id = f"old-{index}"
             app_module.talk_sessions[session_id] = object()
-            app_module.talk_stop_events[session_id] = object()
+            app_module.talk_stop_events[session_id] = threading.Event()
+        oldest_event = app_module.talk_stop_events["old-0"]
         try:
             app_module.prune_talk_sessions()
 
             self.assertEqual(len(app_module.talk_sessions), app_module.MAX_TALK_SESSIONS - 1)
             self.assertNotIn("old-0", app_module.talk_sessions)
+            self.assertTrue(oldest_event.is_set())
         finally:
             app_module.talk_sessions.clear()
             app_module.talk_sessions.update(original_sessions)

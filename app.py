@@ -26,6 +26,34 @@ talk_sessions    = {}   # session_id -> queue.Queue
 talk_stop_events = {}   # session_id -> threading.Event
 
 
+@app.before_request
+def validate_json_fields():
+    """Reject malformed API payloads before routes use string operations."""
+    fields = {
+        "/chat": ("message",), "/save_memory": ("content", "title"),
+        "/project_context": ("path",), "/generate_deliverable": ("kind",),
+        "/memory_search": ("query",), "/semantic_memory_search": ("query",),
+        "/talk": ("topic",), "/customization": (),
+    }
+    if request.method != "POST" or request.path not in fields:
+        return None
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "expected a JSON object"}), 400
+    for field in fields[request.path]:
+        if field in data and not isinstance(data[field], str):
+            return jsonify({"error": f"{field} must be a string"}), 400
+    return None
+
+
+def release_talk_session(session_id):
+    """Stop further agent turns when a session is no longer consumed."""
+    event = talk_stop_events.pop(session_id, None)
+    if event is not None:
+        event.set()
+    talk_sessions.pop(session_id, None)
+
+
 def trim_conversation_history() -> None:
     """Keep only the most recent conversation entries."""
     overflow = len(conversation_history) - MAX_CONVERSATION_HISTORY
@@ -37,8 +65,7 @@ def prune_talk_sessions() -> None:
     """Keep room for one more Free Talk session."""
     while len(talk_sessions) >= MAX_TALK_SESSIONS:
         oldest = next(iter(talk_sessions))
-        talk_sessions.pop(oldest, None)
-        talk_stop_events.pop(oldest, None)
+        release_talk_session(oldest)
 
 
 def get_port() -> int:
@@ -387,7 +414,7 @@ def start_talk():
     q          = queue.Queue()
     stop_event = threading.Event()
     duration = clamp_free_talk_duration(
-        data.get("duration") or get_room_config().get("free_talk_duration", 300)
+        data.get("duration", get_room_config().get("free_talk_duration", 300))
     )
 
     prune_talk_sessions()
@@ -427,8 +454,7 @@ def talk_stream(session_id):
                 trim_conversation_history()
                 yield f"data: {json.dumps(msg)}\n\n"
         finally:
-            talk_sessions.pop(session_id, None)
-            talk_stop_events.pop(session_id, None)
+            release_talk_session(session_id)
 
     return Response(
         stream_with_context(generate()),
