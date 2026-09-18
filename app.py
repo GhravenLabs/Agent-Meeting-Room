@@ -90,7 +90,7 @@ def cloud_agent_status() -> dict:
     for key, agent in CLOUD_AGENTS.items():
         env_names = key_envs.get(key, [])
         configured = any(
-            os.getenv(env_name, "") and not os.getenv(env_name, "").startswith("your_")
+            os.getenv(env_name, "").strip() and not os.getenv(env_name, "").strip().startswith("your_")
             for env_name in env_names
         )
         status[key] = {
@@ -103,7 +103,7 @@ def cloud_agent_status() -> dict:
 
 def markdown_heading(text: str) -> str:
     """Keep generated headings readable even when user content contains hashes."""
-    return str(text or "").replace("#", "").strip() or "Untitled"
+    return " ".join(str(text or "").replace("#", "").split()) or "Untitled"
 
 
 def build_transcript_markdown() -> str:
@@ -155,7 +155,7 @@ def check_ollama() -> bool:
     """Return True if Ollama is reachable on localhost:11434."""
     try:
         r = http_requests.get("http://localhost:11434", timeout=3)
-        return r.status_code < 500
+        return 200 <= r.status_code < 300
     except Exception:
         return False
 
