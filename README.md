@@ -145,6 +145,10 @@ Click **Project Context** and enter a local folder path to load a concise codeba
 
 This is useful for code review meetings, implementation planning, release planning, and project improvement debates without pasting files manually.
 
+Project indexing skips symbolic-link files and files whose resolved paths leave the selected
+folder. Review the selected folder before loading it: ordinary files can still contain sensitive
+content, and project summaries are included in prompts for whichever agents you choose.
+
 ---
 
 ## Semantic memory

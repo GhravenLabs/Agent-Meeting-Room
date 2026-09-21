@@ -124,8 +124,12 @@ def summarize_project(project_path: str) -> dict:
                 skipped += 1
                 continue
             try:
+                # Do not pull linked files or redirected paths outside the chosen project.
+                if path.is_symlink() or not path.resolve().is_relative_to(root):
+                    skipped += 1
+                    continue
                 size = path.stat().st_size
-            except OSError:
+            except (OSError, RuntimeError):
                 skipped += 1
                 continue
             if size > 180_000:
