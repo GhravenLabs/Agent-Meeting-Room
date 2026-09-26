@@ -142,7 +142,7 @@ def _build_snippet(content: str, query: str, radius: int = 90) -> str:
 
 
 def search_memory(query: str, limit: int = 8) -> list:
-    """Search saved Markdown notes in the active memory folder."""
+    """Search saved UTF-8 notes, skipping unreadable or malformed files."""
     if ACTIVE_BACKEND == "none":
         return []
     query = (query or "").strip()
@@ -166,7 +166,7 @@ def search_memory(query: str, limit: int = 8) -> list:
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     content = f.read()
-            except OSError:
+            except (OSError, UnicodeDecodeError):
                 continue
             if query.lower() not in content.lower():
                 continue
