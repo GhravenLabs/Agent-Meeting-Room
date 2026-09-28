@@ -109,8 +109,8 @@ def save_to_obsidian(title: str, content: str) -> bool:
 
 
 def get_recent_memory(max_chars: int = 1500) -> str:
-    """Read recent memory context for agents."""
-    if ACTIVE_BACKEND == "none":
+    """Read recent context; a nonpositive character budget returns no memory."""
+    if ACTIVE_BACKEND == "none" or max_chars <= 0:
         return ""
 
     memory_dir = _get_memory_dir()
