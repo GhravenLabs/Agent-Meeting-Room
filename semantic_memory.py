@@ -100,14 +100,19 @@ def embed_text(text: str, post: Callable = requests.post) -> list:
 
 def semantic_status(memory_dir: str) -> dict:
     np, TurboQuantIndex, error = _optional_vector_modules()
-    metadata = _load_metadata(memory_dir)
+    metadata_error = ""
+    try:
+        metadata = _load_metadata(memory_dir)
+    except UnicodeDecodeError:
+        metadata = []
+        metadata_error = "semantic metadata is not valid UTF-8"
     return {
         "enabled": is_enabled(),
-        "available": bool(is_enabled() and np is not None and TurboQuantIndex is not None),
+        "available": bool(is_enabled() and np is not None and TurboQuantIndex is not None and not metadata_error),
         "model": os.getenv("SEMANTIC_MEMORY_MODEL", DEFAULT_MODEL),
         "indexed_notes": len(metadata),
         "path": _semantic_dir(memory_dir),
-        "error": error,
+        "error": metadata_error or error,
     }
 
 
@@ -162,7 +167,10 @@ def search_semantic_memory(memory_dir: str, query: str, limit: int = DEFAULT_LIM
         return {"available": False, "results": [], "error": f"semantic dependencies unavailable: {error}"}
 
     index_path = _index_path(memory_dir)
-    metadata = _load_metadata(memory_dir)
+    try:
+        metadata = _load_metadata(memory_dir)
+    except UnicodeDecodeError:
+        return {"available": False, "results": [], "error": "semantic metadata is not valid UTF-8"}
     if not metadata or not os.path.exists(index_path):
         return {"available": True, "results": [], "error": ""}
 
