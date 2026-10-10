@@ -142,8 +142,8 @@ def _build_snippet(content: str, query: str, radius: int = 90) -> str:
 
 
 def search_memory(query: str, limit: int = 8) -> list:
-    """Search saved UTF-8 notes, skipping unreadable or malformed files."""
-    if ACTIVE_BACKEND == "none":
+    """Search saved UTF-8 notes; a nonpositive result limit returns no notes."""
+    if ACTIVE_BACKEND == "none" or limit <= 0:
         return []
     query = (query or "").strip()
     if not query:
