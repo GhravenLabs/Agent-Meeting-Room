@@ -13,6 +13,7 @@ import os
 import re
 import uuid
 from datetime import datetime
+from html import escape
 from dotenv import load_dotenv
 from semantic_memory import index_note, semantic_status
 
@@ -65,6 +66,12 @@ def safe_note_title(title: str) -> str:
     return (cleaned or "Meeting_note")[:50]
 
 
+def safe_markdown_heading(title: str) -> str:
+    """Keep user-provided note titles on one plain-text Markdown heading."""
+    cleaned = " ".join(str(title or "").replace("#", "").split()) or "Meeting note"
+    return escape(cleaned, quote=False)
+
+
 def save_to_obsidian(title: str, content: str) -> bool:
     """
     Save a note. Works with any backend.
@@ -78,10 +85,11 @@ def save_to_obsidian(title: str, content: str) -> bool:
         os.makedirs(memory_dir, exist_ok=True)
         timestamp  = datetime.now().strftime("%Y-%m-%d %H:%M")
         safe_title = safe_note_title(title)
+        display_title = safe_markdown_heading(title)
         filename   = f"{datetime.now().strftime('%Y%m%d_%H%M')}_{uuid.uuid4().hex}_{safe_title}.md"
         filepath   = os.path.join(memory_dir, filename)
 
-        note_content = f"""# {title}
+        note_content = f"""# {display_title}
 *Saved: {timestamp}*
 *Backend: {ACTIVE_BACKEND}*
 
@@ -96,7 +104,7 @@ def save_to_obsidian(title: str, content: str) -> bool:
         # Rolling memory file
         memory_path = os.path.join(memory_dir, MEMORY_FILE)
         with open(memory_path, "a", encoding="utf-8") as f:
-            f.write(f"\n## {title} — {timestamp}\n{content}\n\n")
+            f.write(f"\n## {display_title} — {timestamp}\n{content}\n\n")
 
         index_note(memory_dir, filename, title, content)
 
